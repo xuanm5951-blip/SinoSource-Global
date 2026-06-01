@@ -24,7 +24,9 @@ import {
   MessageSquare,
   Send,
   Users,
-  Check
+  Check,
+  Lock,
+  CheckSquare
 } from "lucide-react";
 import { Language, IndustrialCluster, SupplyChainStep, CustomerInquiry } from "./types";
 
@@ -503,6 +505,10 @@ export default function App() {
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
   const [inquirySuccess, setInquirySuccess] = useState(false);
   const [inquiryError, setInquiryError] = useState("");
+  const [inquiryPasscode, setInquiryPasscode] = useState("");
+  const [showInquiryNotice, setShowInquiryNotice] = useState(false);
+  const [isTrackerModalOpen, setIsTrackerModalOpen] = useState(false);
+  const [adminSearch, setAdminSearch] = useState("");
 
   const fetchInquiries = async () => {
     try {
@@ -557,6 +563,37 @@ export default function App() {
       } catch (e) {
         console.error("Failed to load local storage:", e);
       }
+    }
+  };
+
+  const deleteInquiry = (id: string | undefined) => {
+    if (!id) return;
+    try {
+      const cachedStr = localStorage.getItem("sinosourse_local_inquiries");
+      const localList: CustomerInquiry[] = cachedStr ? JSON.parse(cachedStr) : [];
+      const updated = localList.filter(item => item.id !== id);
+      localStorage.setItem("sinosourse_local_inquiries", JSON.stringify(updated));
+      setInquiries(updated);
+    } catch (err) {
+      console.error("Failed to delete inquiry:", err);
+    }
+  };
+
+  const updateInquiryStatus = (id: string | undefined, newStatus: string) => {
+    if (!id) return;
+    try {
+      const cachedStr = localStorage.getItem("sinosourse_local_inquiries");
+      const localList: CustomerInquiry[] = cachedStr ? JSON.parse(cachedStr) : [];
+      const updated = localList.map(item => {
+        if (item.id === id) {
+          return { ...item, status: newStatus };
+        }
+        return item;
+      });
+      localStorage.setItem("sinosourse_local_inquiries", JSON.stringify(updated));
+      setInquiries(updated);
+    } catch (err) {
+      console.error("Failed to update status:", err);
     }
   };
 
@@ -655,6 +692,7 @@ export default function App() {
     });
 
     setInquirySuccess(true);
+    setShowInquiryNotice(true);
     setIsSubmittingInquiry(false);
 
     // Reset input fields immediately for absolute tactile satisfaction
@@ -665,41 +703,13 @@ export default function App() {
     setInquiryQty("");
     setInquirySpecs("");
 
-    // Compose and trigger email mailto to xuanm5951@gmail.com
-    const mailtoSubject = `[SinoSource RFP 采购规格说明书] - ${currentName} - ${currentProduct}`;
-    const mailtoBody = `您好华源环球采购团队 / Hello SinoSource Global Sourcing Team,
-
-以下是通过华源跨境交易中控台自动生成的采购及品控规格指标建议书 (RFP)：
-
-=============================
-1. 采购方联络信息 (CLIENT INBOX REGISTRY)
-公司/联络人姓名: ${currentName}
-联系电话 / WhatsApp: ${currentContact}
-客户回复邮箱: ${currentEmail}
-
-=============================
-2. 采购物料与条款 (SOURCING PROFILE)
-意向采购物料描述：${currentProduct}
-预计采购量级规模：${currentQty || "暂未指定"}
-国际贸易术语偏好 (Incoterms)：${currentIncoterms}
-
-=============================
-3. 工艺材质要求与 AQL 阈值保障 (TECHNICAL SPECIFICATIONS)
-${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
-
-=============================
-本需求已成功录入大厅实时流看板。特此通知华源全球业务中心进行物理审查核算并将本表单备份投递至：xuanm5951@gmail.com
-
-提交时间：${new Date().toUTCString()}`;
-
-    const mailtoUrl = `mailto:xuanm5951@gmail.com?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody)}`;
-
-    // Auto-trigger native mail composition client inside sandbox friendly parameters
-    try {
-      window.location.href = mailtoUrl;
-    } catch (err) {
-      console.error("Failed to automatically launch mail client:", err);
-    }
+    // Smooth scroll to the Reputable Liaison Contact Center (company-contact-section)
+    setTimeout(() => {
+      const element = document.getElementById("company-contact-section");
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 450);
 
     // Trigger async merge pull to sync state
     fetchInquiries();
@@ -924,8 +934,16 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl"></div>
           
           <div className="relative max-w-5xl mx-auto z-10">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="h-[2px] w-12 bg-[#c5a059]"></div>
+            <div className="flex items-center space-x-3 mb-4">
+              <button
+                type="button"
+                onClick={() => setIsTrackerModalOpen(true)}
+                className="w-10 h-10 rounded-full bg-[#c5a059] hover:bg-yellow-500 text-slate-950 flex items-center justify-center font-black font-mono text-base shadow-[0_0_15px_rgba(197,160,89,0.4)] transition-all hover:scale-110 active:scale-95 cursor-pointer border border-[#c5a059] shrink-0"
+                title={lang === "zh" ? "系统控制终端" : "SinoSource Console"}
+              >
+                S
+              </button>
+              <div className="h-[2px] w-6 bg-[#c5a059]"></div>
               <span className="text-[#c5a059] uppercase tracking-[0.25em] text-xs font-black">
                 {t[lang].tagline}
               </span>
@@ -1485,10 +1503,10 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
             </div>
 
             {/* ==================== CUSTOMER INQUIRY & SOURCING REQUIREMENTS PORTAL ==================== */}
-            <div id="customer-inquiry-section" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div id="customer-inquiry-section" className="w-full max-w-4xl mx-auto animate-fade-in text-left">
               
               {/* Inquiry Form Column */}
-              <div className="lg:col-span-7 bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm space-y-6">
+              <div className="bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm space-y-6">
                 
                 <div>
                   <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
@@ -1497,8 +1515,10 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
                   <h3 className="text-2xl font-black text-[#003580] tracking-tight mt-1">
                     {lang === "zh" ? "提交您的采购及品控规格要求" : "Register Sourcing Specs & Requirements"}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 leading-normal">
-                    {lang === "zh" ? "请在下方填写您的联系方式与具体的采购要求，提交后系统将连同供应商库和质检工程师排挡，并在右侧历史状态栏内实时同步进度。" : "Input your specifications to deploy immediate supplier matchmaking and site inspection rosters."}
+                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                    {lang === "zh" 
+                      ? "请在下方填写您的联系方式与具体的采购要求，提交后系统将联同供应商库和质检工程师排挡。点击页面顶端金底‘S’ Logo，可以唤醒专商通道监控后台并解密实时排期进度。" 
+                      : "Input your specifications to deploy immediate supplier matchmaking. Click the golden 'S' logo at the top of the page to launch the secure console."}
                   </p>
                 </div>
 
@@ -1507,8 +1527,12 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-800 text-xs flex items-start space-x-3">
                        <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                        <div>
-                         <p className="font-bold">{lang === "zh" ? "需求提交成功！" : "Inquiry Registered Successfully!"}</p>
-                         <p className="text-slate-600 mt-1">{lang === "zh" ? "您的商业企划方案与排档申请已记录并投射在右侧监控屏上。我们的专家节点将于48小时内通过留下的邮箱/电话/WhatsApp向您同步反馈。" : "Your inquiry has been successfully transmitted. Progress monitors have updated."}</p>
+                         <p className="font-bold">{lang === "zh" ? "需求就地登记成功！" : "Inquiry Registered Successfully!"}</p>
+                         <p className="text-slate-600 mt-1 leading-relaxed">
+                           {lang === "zh" 
+                             ? "您的产品工艺细节与品控指标已存证加密建档。点击页面最顶端的金底“S” Logo，即可输入密码解锁您的完整进度档案，并进行系统性统一管理。" 
+                             : "Your specifications are safely encrypted. Click the golden \"S\" logo at the top of the viewport to inspect and systematically manage."}
+                         </p>
                        </div>
                      </div>
                   )}
@@ -1589,7 +1613,7 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
                       <input 
                         type="text" 
                         required
-                        placeholder={lang === "zh" ? "例如：双层红酒真空保温杯" : "e.g., Stainless Steel Outdoor Tumblers"}
+                        placeholder={lang === "zh" ? "例如：双层不锈钢超轻保温杯" : "e.g., Stainless Steel Vacuum Flask"}
                         value={inquiryProduct} 
                         onChange={(e) => setInquiryProduct(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1598,11 +1622,11 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
 
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "首批合作意向订单量" : "Target Sourcing Volume (Units)"}
+                        {lang === "zh" ? "预计单次或年采购规模（例如：5000只）" : "Estimated Target Quantity"}
                       </label>
                       <input 
                         type="text" 
-                        placeholder={lang === "zh" ? "例如：3000 件" : "e.g., 5000 Pcs"}
+                        placeholder={lang === "zh" ? "例如：5,000 Pcs" : "e.g., 5,000 Pcs / Shipment"}
                         value={inquiryQty} 
                         onChange={(e) => setInquiryQty(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1642,93 +1666,51 @@ ${currentSpecs || "无特殊工艺材质及 AQL 重点参数标示。"}
 
               </div>
 
-              {/* Live Inquiry Tracker Queue Screen */}
-              <div className="lg:col-span-5 bg-[#001c44] text-white p-6 md:p-8 rounded-sm shadow-md border-t-4 border-[#c5a059] space-y-6">
-                
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <div>
-                    <span className="text-[10px] text-[#c5a059] font-black uppercase tracking-widest block font-mono">Live Sourcing Console</span>
-                    <h4 className="text-sm font-bold text-white mt-1">
-                      {lang === "zh" ? "全球采购线索与进度看板" : "Secured Requirements Roster"}
-                    </h4>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">Active Stream</span>
-                  </div>
-                </div>
-
-                <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
-                  {inquiries.length === 0 ? (
-                    <div className="text-center py-10 text-slate-400 text-xs">
-                      {lang === "zh" ? "暂无采购线索，立即在左侧登记！" : "No specifications listed yet."}
-                    </div>
-                  ) : (
-                    inquiries.map((inq, idx) => (
-                      <div 
-                        key={inq.id || idx} 
-                        className="bg-white/5 border border-white/10 p-4 rounded-sm space-y-3 hover:bg-white/10 transition-colors animate-fade-in text-left text-white"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="space-y-0.5">
-                            <span className="text-[10px] font-mono text-[#c5a059] font-bold block">{inq.id}</span>
-                            <h5 className="text-xs font-black text-white">{inq.clientName}</h5>
-                          </div>
-                          <span className="text-[9px] bg-amber-500/10 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded uppercase font-extrabold shrink-0">
-                            {lang === "zh" ? "资深总监审查中" : "Under Evaluation"}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-[11px] border-t border-b border-white/5 py-2">
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase font-medium">{lang === "zh" ? "采购目标" : "Item"}</span>
-                            <span className="font-semibold text-slate-200 line-clamp-1">{inq.productName}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase font-medium">{lang === "zh" ? "采购规模" : "Quantity"}</span>
-                            <span className="font-semibold text-slate-200 line-clamp-1">{inq.quantity}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase font-medium">{lang === "zh" ? "联系沟通" : "Phone/WA"}</span>
-                            <span className="font-semibold text-slate-200 line-clamp-1">{inq.contact}</span>
-                          </div>
-                          <div>
-                            <span className="text-[9px] text-slate-400 block uppercase font-medium">{lang === "zh" ? "物流条款" : "Trade terms"}</span>
-                            <span className="font-semibold text-slate-200 line-clamp-1">{inq.incoterms}</span>
-                          </div>
-                        </div>
-
-                        <div className="text-[10px] text-slate-300 italic line-clamp-2 leading-relaxed bg-black/15 p-2 rounded">
-                          <strong>{lang === "zh" ? "规格品控：" : "Specs: "}</strong>
-                          {inq.specifications}
-                        </div>
-
-                        <div className="flex justify-between items-center text-[9px] text-slate-400 pt-1">
-                          <span className="flex items-center space-x-1">
-                            <Users className="w-3 h-3 text-[#c5a059]" />
-                            <span>{lang === "zh" ? "指派工位：品控调度组" : "Assigned Desk: Supply Node S"}</span>
-                          </span>
-                          <span>{new Date(inq.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="bg-[#c5a059]/10 p-3.5 rounded border border-[#c5a059]/20 text-[11px] text-slate-200">
-                  ⚡ <strong>{lang === "zh" ? "跨境加密保障：" : "Commercial Protocol: "}</strong>
-                  {lang === "zh" ? 
-                    "华源物理中控台采用银行级 SSL 安全加密，确保您提供的上游开模、配方等知识产权绝不外泄给第三方同类工厂。" : 
-                    "All blueprint files, metal specification tolerances and personal data elements are strictly bound under non-disclosure obligations."
-                  }
-                </div>
-
-              </div>
-
             </div>
 
             {/* ==================== SINO-SOURCE REPUTABLE CONTACT CENTER ==================== */}
             <div id="company-contact-section" className="bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm space-y-6">
+              
+              {showInquiryNotice && (
+                <div className="bg-emerald-50 border-2 border-emerald-500 rounded-sm p-4 md:p-6 mb-4 flex items-start space-x-3 text-left shadow-sm animate-fade-in relative overflow-hidden">
+                  <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 opacity-5 pointer-events-none">
+                    <CheckSquare className="w-48 h-48 text-emerald-900" />
+                  </div>
+                  <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center shrink-0 shadow">
+                    <Check className="w-5 h-5 stroke-[3] text-white" />
+                  </div>
+                  <div className="space-y-1.5 flex-1 select-text">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <h4 className="text-sm font-black text-emerald-950 flex items-center space-x-1.5">
+                        <span>📬 {lang === "zh" ? "华源全球业务中心：已收悉您的采购需求线索 AQL 建议档案！" : "📬 SinoSource Global Hub: Sourcing Inquiry Decrypted!"}</span>
+                      </h4>
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-mono font-bold px-2 py-0.5 rounded uppercase self-start">
+                        {lang === "zh" ? "系统提示：线索已建档，您也可以直接联系" : "Status: Received"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 leading-relaxed font-semibold">
+                      {lang === "zh" ? 
+                        "我们已成功将您的物料工艺细节与品控指标存证加密，并在中控台上完成物理投射编档。为了在最快的时间内对您的物料需求（如不锈钢保温杯、冷深冲工艺等）启动 AQLII 首样排期，请立即点击下方任一绿色或蓝色官方通道，直接建立 1 对 1 商务沟通与顾问式对接！" : 
+                        "We have received and logged your sourcing specifications! Sourcing parameters are safely stored. To initiate custom product line tooling and mold tolerances checks, contact us directly via any of the direct lines listed below!"
+                      }
+                    </p>
+                    <div className="pt-1.5 flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                      <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider font-mono">
+                        {lang === "zh" ? "系统状态：推荐直接呼叫或添加 WhatsApp" : "System recommendation: Chat via WhatsApp or Call below"}
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setShowInquiryNotice(false)} 
+                    className="text-slate-400 hover:text-slate-600 transition text-xs font-bold p-1 shrink-0 self-start cursor-pointer"
+                    title={lang === "zh" ? "关闭提示" : "Dismiss"}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-4">
                 <div>
                   <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
