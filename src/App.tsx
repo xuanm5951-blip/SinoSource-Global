@@ -26,7 +26,11 @@ import {
   Users,
   Check,
   Lock,
-  CheckSquare
+  CheckSquare,
+  Search,
+  Trash2,
+  RefreshCw,
+  X
 } from "lucide-react";
 import { Language, IndustrialCluster, SupplyChainStep, CustomerInquiry } from "./types";
 
@@ -566,20 +570,25 @@ export default function App() {
     }
   };
 
-  const deleteInquiry = (id: string | undefined) => {
+  const deleteInquiry = async (id: string | undefined) => {
     if (!id) return;
     try {
       const cachedStr = localStorage.getItem("sinosourse_local_inquiries");
       const localList: CustomerInquiry[] = cachedStr ? JSON.parse(cachedStr) : [];
       const updated = localList.filter(item => item.id !== id);
       localStorage.setItem("sinosourse_local_inquiries", JSON.stringify(updated));
-      setInquiries(updated);
+      setInquiries(prev => prev.filter(item => item.id !== id));
+
+      await fetch(`/api/inquiries/${id}`, {
+        method: "DELETE"
+      });
+      fetchInquiries();
     } catch (err) {
       console.error("Failed to delete inquiry:", err);
     }
   };
 
-  const updateInquiryStatus = (id: string | undefined, newStatus: string) => {
+  const updateInquiryStatus = async (id: string | undefined, newStatus: string) => {
     if (!id) return;
     try {
       const cachedStr = localStorage.getItem("sinosourse_local_inquiries");
@@ -591,7 +600,19 @@ export default function App() {
         return item;
       });
       localStorage.setItem("sinosourse_local_inquiries", JSON.stringify(updated));
-      setInquiries(updated);
+      setInquiries(prev => prev.map(item => {
+        if (item.id === id) {
+          return { ...item, status: newStatus };
+        }
+        return item;
+      }));
+
+      await fetch(`/api/inquiries/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      fetchInquiries();
     } catch (err) {
       console.error("Failed to update status:", err);
     }
@@ -809,9 +830,14 @@ export default function App() {
       {/* Top Professional Navigation Header */}
       <nav id="navbar" className="sticky top-0 z-50 h-20 px-4 md:px-12 flex items-center justify-between bg-white border-b border-slate-200 shadow-sm shrink-0">
         <div id="nav-brand" className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-[#003580] flex items-center justify-center rounded-sm shrink-0 shadow-sm">
-            <span className="text-white font-black text-xl italic">S</span>
-          </div>
+          <button 
+            type="button"
+            onClick={() => setIsTrackerModalOpen(true)}
+            className="w-10 h-10 bg-[#003580] hover:bg-[#c5a059] group flex items-center justify-center rounded-sm shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer border border-[#c5a059]/20"
+            title={lang === "zh" ? "打开安全授权中控终端" : "Open Secure Console"}
+          >
+            <span className="text-white group-hover:text-slate-950 font-black text-xl italic transition-colors">S</span>
+          </button>
           <div className="flex flex-col">
             <span className="text-lg md:text-xl font-extrabold tracking-tight text-[#003580]">
               {t[lang].brand}
@@ -2549,6 +2575,377 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* ==================== SINO-SOURCE ADMIN DIGITAL TWIN TERMINAL MODAL ==================== */}
+      {isTrackerModalOpen && (
+        <div 
+          id="digital-twin-terminal" 
+          className="fixed inset-0 z-55 flex items-center justify-center bg-slate-950/95 backdrop-blur-md p-4 md:p-8 overflow-y-auto animate-fade-in"
+          style={{ animationDuration: '300ms' }}
+        >
+          <div className="bg-[#001533] border-2 border-[#c5a059] rounded-sm shadow-2xl w-full max-w-6xl h-full max-h-[92vh] flex flex-col relative text-white">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0 bg-[#001c44]">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-[#c5a059] flex items-center justify-center text-[#001533] font-black italic shadow-[0_0_10px_rgba(197,160,89,0.5)]">
+                  S
+                </div>
+                <div>
+                  <h3 className="text-sm md:text-base font-black tracking-wider uppercase text-white flex items-center gap-2">
+                    {lang === "zh" ? "华源专商中控数字孪生终端" : "Sinosource Admin Digital Twin Terminal"}
+                    <span className="text-[10px] bg-[#c5a059]/10 text-[#c5a059] border border-[#c5a059]/30 px-1.5 py-0.5 rounded font-mono font-medium tracking-normal normal-case">v4.2 PRO</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-mono">
+                    SECURITY LEVEL: AES-256 / SHA-512 ISO 27001 ISOLATION STATUS
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                {/* Status indicator */}
+                <div className="hidden sm:flex items-center space-x-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-sm text-[10px] font-mono">
+                  {inquiryPasscode.trim().toUpperCase() === "LBX" ? (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                      <span className="text-emerald-400 uppercase font-black tracking-wider">{lang === "zh" ? "系统解密解封" : "RECORDS DECRYPTED"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
+                      <span className="text-rose-400 uppercase font-black tracking-wider">{lang === "zh" ? "高度隔离锁闭中" : "CRYPT-LOCKED"}</span>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsTrackerModalOpen(false);
+                    setInquiryPasscode("");
+                  }}
+                  className="p-1 px-2.5 bg-white/5 hover:bg-red-600/35 border border-white/10 hover:border-red-500/50 rounded-sm text-slate-300 hover:text-white transition flex items-center space-x-1 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">{lang === "zh" ? "关闭" : "Close"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body Container */}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-[#001533] p-6 flex flex-col justify-center items-center">
+              {inquiryPasscode.trim().toUpperCase() !== "LBX" ? (
+                
+                // SECURE AUTHORIZATION GATEWAY SCREEN
+                <div className="w-full max-w-md bg-[#001c44] border border-white/10 p-8 rounded-sm text-center space-y-6 shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-red-500 via-[#c5a059] to-red-500"></div>
+                  
+                  <div className="w-16 h-16 bg-slate-950 border border-[#c5a059]/40 rounded-full flex items-center justify-center text-rose-400 shadow-inner relative mx-auto">
+                    <Lock className="w-7 h-7 stroke-[2.5]" />
+                    <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-rose-500 rounded-full flex items-center justify-center text-[10px] text-white font-extrabold animate-bounce">
+                      !
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-black text-rose-400 uppercase tracking-widest font-mono">
+                      🔒 CLIENT RECORDS CONFIDENTIALITY GATE
+                    </h4>
+                    <p className="text-xs text-slate-350 leading-relaxed font-medium">
+                      {lang === "zh" ? 
+                        "为遵守相关海关及国际贸易保密条款，填表者的多维开模公差、特质AQL指标与联系地址已就地全数哈希隔离。系统外部绝不保留任何明文记录。" : 
+                        "To ensure full compliance with international commercial trade privacy agreements, all submitter specs and communication numbers are strictly encrypted."
+                      }
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-mono leading-relaxed bg-black/30 p-2.5 rounded border border-white/5">
+                      {lang === "zh" ? "【安全声明】输入专属安全密钥解锁以接管最高级物理指派与机密文件物理销毁等顶级统管权力。" : "【SECURITY】Please type the correct key to unlock data nodes and authorize state assignment / document destruction."}
+                    </p>
+                  </div>
+
+                  {/* Security Passcode Field - Obsfucating characters securely */}
+                  <div className="w-full space-y-3">
+                    <label className="text-[10px] font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
+                      {lang === "zh" ? "高级物料控制官安全密钥验证：" : "Administrative Encryption Key Authentication:"}
+                    </label>
+                    <input 
+                      type="password" 
+                      maxLength={12} 
+                      placeholder={lang === "zh" ? "请输入安全秘钥" : "Enter secure key..."}
+                      value={inquiryPasscode || ""}
+                      onChange={(e) => setInquiryPasscode(e.target.value)}
+                      className="w-full bg-slate-950 border border-white/15 hover:border-[#c5a059] text-white rounded-sm py-3 px-4 text-center text-lg tracking-widest outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all font-mono font-black"
+                    />
+                    <div className="text-[9px] text-slate-500 tracking-wider uppercase font-mono flex justify-center items-center gap-1.5 pt-1">
+                      <span className="w-1.5 h-1.5 bg-slate-600 rounded-full"></span>
+                      <span>CIPHER SUITE: TLS_AES_256_GCM_SHA384</span>
+                    </div>
+                  </div>
+                </div>
+
+              ) : (
+
+                // MAIN SYSTEMATIC MANAGEMENT CONTROL CENTRE (UNLOCKED STATE)
+                <div className="w-full h-full flex flex-col space-y-6 text-left">
+                  
+                  {/* Unlocked Session Banner */}
+                  <div className="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                    <div>
+                      <span className="text-[10px] text-emerald-400 uppercase font-black tracking-widest block font-mono">AUTHORIZED LIVE SESSION</span>
+                      <h4 className="text-sm font-bold text-emerald-200 mt-0.5 flex items-center gap-2">
+                        <span>🔓 {lang === "zh" ? "尊贵的高级物料管理官员已接入中控系统" : "Principal Procurement Officer Session Enabled"}</span>
+                        <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-medium">Session IP Verified</span>
+                      </h4>
+                      <p className="text-xs text-slate-300 mt-1">
+                        {lang === "zh" ? "您已成功授信，拥有最高等级采购配方检索、指派跟进调整和档案物理销毁最高权力。" : "Complete clearance active. Filter specs, update dispatch milestones, or completely destruct record nodes."}
+                      </p>
+                    </div>
+
+                    <button 
+                      onClick={() => setInquiryPasscode("")}
+                      className="bg-red-500/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 font-bold px-3 py-1.5 rounded text-xs transition uppercase tracking-wider font-mono shrink-0 cursor-pointer"
+                    >
+                      {lang === "zh" ? "安全锁闭退出" : "Lock Session"}
+                    </button>
+                  </div>
+
+                  {/* Operational Dashboard Metrics Grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
+                    <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "存证线索总数" : "Total Inquiries"}</span>
+                      <span className="text-2xl font-black text-[#c5a059]">{inquiries.length} {lang === "zh" ? "宗" : "Inquiries"}</span>
+                    </div>
+                    <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "排档质检专家" : "Active Roster"}</span>
+                      <span className="text-2xl font-black text-emerald-400">18 {lang === "zh" ? "组" : "Nodes"}</span>
+                    </div>
+                    <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "海关税率减免" : "Customs Reduction"}</span>
+                      <span className="text-2xl font-black text-white">99.2%</span>
+                    </div>
+                    <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm font-mono">
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{lang === "zh" ? "物理销毁权限" : "Destruction Status"}</span>
+                      <span className="text-[11px] bg-red-600/15 border border-red-500/30 text-red-400 px-2 py-1 rounded font-bold uppercase tracking-wider block text-center mt-1">
+                        {lang === "zh" ? "强力授权激活" : "DESTRUCT ENABLED"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Multi-Dimensional Query Filtering Row */}
+                  <div className="bg-[#001c44] border border-white/10 p-4 rounded-sm flex flex-col md:flex-row gap-4 items-center justify-between shrink-0">
+                    <div className="relative w-full md:max-w-md">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Search className="w-4 h-4 text-slate-400" />
+                      </span>
+                      <input 
+                        type="text" 
+                        placeholder={lang === "zh" ? "通过公司名称、联络信息、目标大类、特定 AQL 等关键词模糊检索..." : "Query name, phone, trade term, specs..."}
+                        value={adminSearch}
+                        onChange={(e) => setAdminSearch(e.target.value)}
+                        className="w-full bg-[#001533] border border-white/10 rounded-sm py-2 px-3 pl-10 text-xs text-white focus:outline-none focus:border-[#c5a059] transition-all font-sans"
+                      />
+                      {adminSearch && (
+                        <button 
+                          onClick={() => setAdminSearch("")}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-3 w-full md:w-auto shrink-0 justify-end">
+                      <button
+                        onClick={fetchInquiries}
+                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs transition flex items-center space-x-1 font-semibold uppercase tracking-wider cursor-pointer"
+                        title={lang === "zh" ? "同步云端最新记录" : "Sync Server data"}
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-[#c5a059]" />
+                        <span className="hidden sm:inline font-mono">{lang === "zh" ? "重新拉取" : "Sync Records"}</span>
+                      </button>
+                      
+                      <div className="text-xs text-slate-400 font-mono">
+                        {lang === "zh" ? `已筛选显示: ${inquiries.filter(inq => {
+                          const query = adminSearch.toLowerCase().trim();
+                          if (!query) return true;
+                          return (
+                            (inq.clientName || "").toLowerCase().includes(query) ||
+                            (inq.contact || "").toLowerCase().includes(query) ||
+                            (inq.email || "").toLowerCase().includes(query) ||
+                            (inq.productName || "").toLowerCase().includes(query) ||
+                            (inq.specifications || "").toLowerCase().includes(query) ||
+                            (inq.id || "").toLowerCase().includes(query) ||
+                            (inq.status || "").toLowerCase().includes(query)
+                          );
+                        }).length} 宗` : `Filtered: ${inquiries.filter(inq => {
+                          const query = adminSearch.toLowerCase().trim();
+                          if (!query) return true;
+                          return (
+                            (inq.clientName || "").toLowerCase().includes(query) ||
+                            (inq.contact || "").toLowerCase().includes(query) ||
+                            (inq.email || "").toLowerCase().includes(query) ||
+                            (inq.productName || "").toLowerCase().includes(query) ||
+                            (inq.specifications || "").toLowerCase().includes(query) ||
+                            (inq.id || "").toLowerCase().includes(query) ||
+                            (inq.status || "").toLowerCase().includes(query)
+                          );
+                        }).length} cases`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scaled Scrollable Records Output */}
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-4 min-h-[300px]">
+                    {inquiries.filter(inq => {
+                      const query = adminSearch.toLowerCase().trim();
+                      if (!query) return true;
+                      return (
+                        (inq.clientName || "").toLowerCase().includes(query) ||
+                        (inq.contact || "").toLowerCase().includes(query) ||
+                        (inq.email || "").toLowerCase().includes(query) ||
+                        (inq.productName || "").toLowerCase().includes(query) ||
+                        (inq.specifications || "").toLowerCase().includes(query) ||
+                        (inq.id || "").toLowerCase().includes(query) ||
+                        (inq.status || "").toLowerCase().includes(query)
+                      );
+                    }).length === 0 ? (
+                      <div className="text-center py-24 text-slate-400 text-xs bg-[#001c44] border border-white/5 rounded-sm">
+                        <AlertTriangle className="w-8 h-8 text-[#c5a059] mx-auto mb-3 opacity-60" />
+                        <p className="font-bold text-slate-300">{lang === "zh" ? "没有匹配任何条件的采购线索" : "No matching inquiries found."}</p>
+                        <p className="text-[11px] mt-1 text-slate-500">{lang === "zh" ? "尝试更改检索词或登记新的物料档案" : "Adjust your query criteria or submit a new inquiry form."}</p>
+                      </div>
+                    ) : (
+                      inquiries.filter(inq => {
+                        const query = adminSearch.toLowerCase().trim();
+                        if (!query) return true;
+                        return (
+                          (inq.clientName || "").toLowerCase().includes(query) ||
+                          (inq.contact || "").toLowerCase().includes(query) ||
+                          (inq.email || "").toLowerCase().includes(query) ||
+                          (inq.productName || "").toLowerCase().includes(query) ||
+                          (inq.specifications || "").toLowerCase().includes(query) ||
+                          (inq.id || "").toLowerCase().includes(query) ||
+                          (inq.status || "").toLowerCase().includes(query)
+                        );
+                      }).map((inq) => (
+                        <div 
+                          key={inq.id} 
+                          className="bg-[#001c44] border border-white/10 rounded-sm p-5 space-y-4 hover:border-[#c5a059]/40 transition-all shadow-md"
+                        >
+                          {/* Card Top Information Header */}
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-white/10">
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <span className="text-[10px] font-mono font-bold text-[#c5a059] bg-[#c5a059]/10 px-2 py-0.5 border border-[#c5a059]/20 rounded-sm">{inq.id}</span>
+                                <span className="text-slate-400 text-[10px] font-mono">{new Date(inq.createdAt).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")}</span>
+                              </div>
+                              <h5 className="text-sm font-extrabold text-white mt-1.5 flex items-center space-x-2">
+                                <Users className="w-4 h-4 text-[#c5a059]" />
+                                <span>{inq.clientName}</span>
+                              </h5>
+                              <p className="text-xs text-slate-305 mt-1 select-all hover:text-emerald-300 transition duration-150">
+                                <span className="font-semibold text-slate-400 font-mono">Email:</span> {inq.email}
+                              </p>
+                            </div>
+
+                            {/* Status and Action Panel */}
+                            <div className="space-y-2 shrink-0">
+                              <div className="flex items-center justify-end space-x-1 text-[11px]">
+                                <span className="text-slate-400 font-medium">{lang === "zh" ? "当前作业进程：" : "Dispatch status:"}</span>
+                                <span className="text-[#c5a059] font-black">{inq.status || "Reviewing"}</span>
+                              </div>
+
+                              <div className="flex flex-wrap items-center justify-end gap-2">
+                                {/* Update Status Select dropdown */}
+                                <div className="relative">
+                                  <select 
+                                    value={inq.status}
+                                    onChange={(e) => updateInquiryStatus(inq.id, e.target.value)}
+                                    className="bg-slate-950 border border-[#c5a059]/40 text-[#c5a059] text-[11px] px-2.5 py-1.5 pr-8 rounded-sm font-bold focus:outline-none focus:border-[#c5a059] transition cursor-pointer appearance-none"
+                                  >
+                                    <option value="Reviewing (资深总监评估中)">{lang === "zh" ? "🔄 资深总监评估中" : "🔄 Reviewing"}</option>
+                                    <option value="Auditing (供应商资质审查中)">{lang === "zh" ? "🔎 供应商资质审查中" : "🔎 Supplier Auditing"}</option>
+                                    <option value="Prototyping (首样模具打样中)">{lang === "zh" ? "📐 首样模具打样中" : "📐 Prototyping"}</option>
+                                    <option value="Production (大货柔性排产中)">{lang === "zh" ? "🏭 大货柔性排产中" : "🏭 Mass Production"}</option>
+                                    <option value="QC Quality (AQLII 现场出厂抽检中)">{lang === "zh" ? "🔬 AQLII 现场出厂抽检中" : "🔬 AQL II QC Inspection"}</option>
+                                    <option value="Logistics (集港理货与多模海运中)">{lang === "zh" ? "🚢 集港理货与多模海运中" : "🚢 Logistics Tracking"}</option>
+                                    <option value="Customs (出口退税与国合报关中)">{lang === "zh" ? "📦 出口退税与国合报关中" : "📦 Customs Clearance"}</option>
+                                    <option value="Completed (保密合同顺利履约结案)">{lang === "zh" ? "✅ 保密合同顺利履约结案" : "✅ Order Completed"}</option>
+                                  </select>
+                                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-[#c5a059]">
+                                    ▼
+                                  </span>
+                                </div>
+
+                                {/* Destruction Command Button */}
+                                <button 
+                                  onClick={() => {
+                                    if (confirm(lang === "zh" ? "⚠️ 是否确认物理销毁该档案？\n\n此项操作属于最高行政指令且无法撤销！该记录将彻底从云端系统及本地存储器中抹除！" : "🚨 DANGER: Are you sure you want to permanently delete this record? This cannot be undone!")) {
+                                      deleteInquiry(inq.id);
+                                    }
+                                  }}
+                                  className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-sm text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer hover:shadow-lg border border-red-500/50"
+                                  title={lang === "zh" ? "一键彻底物理清算" : "Permanent physical destruction"}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>{lang === "zh" ? "物理销毁" : "Destruct"}</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Detail Specifications Specifications Row */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                            <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
+                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{lang === "zh" ? "采购产品大类" : "Target Product Description"}</span>
+                              <span className="font-bold text-white block">{inq.productName}</span>
+                            </div>
+                            
+                            <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
+                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{lang === "zh" ? "意向合作采购量" : "Target Sourcing Volume"}</span>
+                              <span className="font-bold text-white block">{inq.quantity || (lang === "zh" ? "无限/持续采购" : "Ongoing Sourcing")}</span>
+                            </div>
+
+                            <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
+                              <span className="text-[10px] text-emerald-450 uppercase font-mono block tracking-wider font-extrabold">{lang === "zh" ? "特派沟通地址 (已安全解密)" : "Decrypted WhatsApp/Tel"}</span>
+                              <span className="font-bold text-emerald-400 select-all block bg-emerald-500/10 px-2 py-0.5 rounded-sm line-clamp-1 border border-emerald-500/15">
+                                {inq.contact}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="bg-[#001533] p-3 rounded border border-white/5 text-xs text-slate-200">
+                            <strong className="text-[#c5a059] block mb-1 font-mono tracking-wider">{lang === "zh" ? "材质工艺要求、AQL参数与特殊申报配方：" : "Detailed Specifications & AQL Quality Directives:"}</strong>
+                            <p className="whitespace-pre-wrap leading-relaxed font-sans">{inq.specifications}</p>
+                          </div>
+
+                          {/* Trade incoterms bar */}
+                          <div className="text-[10px] text-slate-400 font-mono flex items-center justify-between pt-1">
+                            <span>Preferred Trade Term: <strong className="text-white font-sans">{inq.incoterms || "FOB Ningbo"}</strong></span>
+                            <span className="text-[9px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-400 uppercase">AQL Standards Checked</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                </div>
+
+              )}
+            </div>
+
+            {/* Modal Footer bar */}
+            <div className="px-6 py-3 border-t border-white/10 bg-[#001c44] shrink-0 text-center text-[10px] text-slate-400 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+              <span>SinoSource Digital Twin Framework v12.1. Confidential trade security protocols enforce state jurisdiction.</span>
+              <div className="flex justify-center space-x-3">
+                <span className="text-[#c5a059] font-bold">SHA-256 Decryption Active</span>
+                <span>•</span>
+                <span>ISO 9001 Audited</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

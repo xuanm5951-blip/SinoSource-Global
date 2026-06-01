@@ -86,6 +86,29 @@ app.post("/api/inquiries", (req, res) => {
   res.status(201).json(newInquiry);
 });
 
+// Update inquiry status
+app.put("/api/inquiries/:id", (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const index = inquiries.findIndex(item => item.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Inquiry not found" });
+  }
+  inquiries[index].status = status;
+  res.json(inquiries[index]);
+});
+
+// Delete inquiry
+app.delete("/api/inquiries/:id", (req, res) => {
+  const { id } = req.params;
+  const index = inquiries.findIndex(item => item.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: "Inquiry not found" });
+  }
+  inquiries.splice(index, 1);
+  res.json({ success: true, message: "Inquiry destroyed" });
+});
+
 // REST API endpoint for the AI-powered Cross-border procurement scheduler/planner
 app.post("/api/sourcing/plan", async (req, res) => {
   const { product, quantity, targetPrice, destination, language = "en" } = req.body;
