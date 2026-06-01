@@ -1,0 +1,6 @@
+{
+  "name": "SinoSource Global",
+  "description": "Premium Chinese cross-border sourcing and purchasing agent company platform featuring high-end visual experiences, interactive supply chain simulators, and AI-powered sourcing guidance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
