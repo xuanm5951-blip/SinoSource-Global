@@ -33,6 +33,8 @@ import {
   X
 } from "lucide-react";
 import { Language, IndustrialCluster, SupplyChainStep, CustomerInquiry } from "./types";
+// @ts-ignore
+import cargoShipHero from "./assets/images/cargo_ship_hero_1780372857415.png";
 
 // Dynamic Translations Dictionary for Elite Multilingual Experience
 const t: Record<Language, any> = {
@@ -829,20 +831,27 @@ export default function App() {
       
       {/* Top Professional Navigation Header */}
       <nav id="navbar" className="sticky top-0 z-50 h-20 px-4 md:px-12 flex items-center justify-between bg-white border-b border-slate-200 shadow-sm shrink-0">
-        <div id="nav-brand" className="flex items-center space-x-3">
+        <div id="nav-brand" className="flex items-center space-x-3.5 group">
           <button 
             type="button"
             onClick={() => setIsTrackerModalOpen(true)}
-            className="w-10 h-10 bg-[#003580] hover:bg-[#c5a059] group flex items-center justify-center rounded-sm shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer border border-[#c5a059]/20"
+            className="relative w-11 h-11 bg-slate-950 flex items-center justify-center rounded-sm shrink-0 shadow-lg border border-[#c5a059]/40 hover:border-[#c5a059] hover:shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all duration-300 transform hover:scale-[1.03] cursor-pointer"
             title={lang === "zh" ? "打开安全授权中控终端" : "Open Secure Console"}
           >
-            <span className="text-white group-hover:text-slate-950 font-black text-xl italic transition-colors">S</span>
+            <div className="absolute inset-0 opacity-15 bg-gradient-to-tr from-[#c5a059] to-transparent"></div>
+            {/* Elegant vector icon representing layered secure supply nodes */}
+            <svg className="w-6 h-6 text-[#c5a059] transition-all duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12 2L3 7L12 12L21 7L12 2Z" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 12L12 17L21 12" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 17L12 22L21 17" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 5.5C12 5.5 10.5 6.5 10.5 7.5C10.5 8.5 12 9 12 10C12 11 10.5 11.5 10.5 11.5" strokeLinecap="round" strokeWidth="1.5" />
+            </svg>
           </button>
           <div className="flex flex-col">
-            <span className="text-lg md:text-xl font-extrabold tracking-tight text-[#003580]">
+            <span className="text-base md:text-lg font-black tracking-widest text-slate-950 uppercase">
               {t[lang].brand}
             </span>
-            <span className="text-[10px] tracking-[0.2em] font-semibold text-[#c5a059] uppercase -mt-1 hidden md:inline">
+            <span className="text-[9px] tracking-[0.3em] font-black text-[#c5a059] uppercase -mt-0.5 hidden md:inline-block">
               {t[lang].brandSub}
             </span>
           </div>
@@ -904,14 +913,17 @@ export default function App() {
           </div>
 
           <button 
+            type="button"
             onClick={() => {
               setActiveTab("home");
               setTimeout(() => {
                 const element = document.getElementById("customer-inquiry-section");
-                if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }, 100);
             }}
-            className="bg-[#003580] text-white text-[12px] md:text-sm font-bold px-4 py-2 hover:bg-opacity-90 transition rounded-sm flex items-center shadow-sm"
+            className="bg-[#003580] text-white text-[12px] md:text-sm font-bold px-4 py-2 hover:bg-opacity-90 transition rounded-sm flex items-center shadow-sm cursor-pointer"
           >
             {lang === "zh" ? "立即联系" : lang === "es" ? "Contactar" : lang === "ru" ? "Связаться" : "Contact Us"}
           </button>
@@ -955,576 +967,331 @@ export default function App() {
 
       {/* Hero Presentation Display Card / Upper viewport (Standard on Home Tab) */}
       {activeTab === "home" && (
-        <header id="corp-hero" className="relative flex-shrink-0 bg-gradient-to-r from-slate-950 via-slate-900 to-[#001c44] text-white py-16 md:py-24 px-4 md:px-12 overflow-hidden border-b-4 border-[#c5a059]">
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400 via-blue-900 to-transparent"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl"></div>
+        <header id="corp-hero" className="relative flex-shrink-0 bg-slate-950 text-white py-16 md:py-24 px-4 md:px-12 overflow-hidden border-b-4 border-[#c5a059]">
+          {/* Background image layer matching the exact container port aesthetic */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={cargoShipHero} 
+              alt="SinoSource cargo container ship docked at port" 
+              className="w-full h-full object-cover object-center"
+              referrerPolicy="no-referrer"
+            />
+            {/* Dark deep-blue overlay to seamlessly preserve text readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/70 to-[#001c44]/60"></div>
+          </div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl z-0"></div>
           
-          <div className="relative max-w-5xl mx-auto z-10">
-            <div className="flex items-center space-x-3 mb-4">
-              <button
-                type="button"
-                onClick={() => setIsTrackerModalOpen(true)}
-                className="w-10 h-10 rounded-full bg-[#c5a059] hover:bg-yellow-500 text-slate-950 flex items-center justify-center font-black font-mono text-base shadow-[0_0_15px_rgba(197,160,89,0.4)] transition-all hover:scale-110 active:scale-95 cursor-pointer border border-[#c5a059] shrink-0"
-                title={lang === "zh" ? "系统控制终端" : "SinoSource Console"}
-              >
-                S
-              </button>
-              <div className="h-[2px] w-6 bg-[#c5a059]"></div>
-              <span className="text-[#c5a059] uppercase tracking-[0.25em] text-xs font-black">
+          <div className="relative max-w-5xl mx-auto z-10 font-sans">
+            <div className="flex items-center space-x-2.5 mb-4">
+              <span className="h-[2px] w-8 bg-[#c5a059]"></span>
+              <span className="text-[#c5a059] uppercase tracking-[0.25em] text-[10px] md:text-xs font-black">
                 {t[lang].tagline}
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.1] mb-6 max-w-3xl">
-              {t[lang].heroHeadingPrefix} <br className="hidden md:inline" />
-              <span className="text-[#c5a059] italic bg-gradient-to-r from-amber-200 to-[#c5a059] bg-clip-text text-transparent">
-                {t[lang].heroHeadingSuf}
-              </span>
+            <h1 id="hero-heading" className="text-2xl md:text-5xl font-black tracking-tight mb-4 leading-none uppercase">
+              <span className="text-white">{t[lang].heroHeadingPrefix} </span>
+              <span className="text-[#c5a059]">{t[lang].heroHeadingSuf}</span>
             </h1>
             
-            <p className="text-sm md:text-md text-slate-300 max-w-2xl leading-relaxed mb-8">
+            <p className="text-slate-300 text-[11px] md:text-sm max-w-2xl leading-relaxed mb-8">
               {t[lang].heroSub}
             </p>
 
-            <div className="flex flex-wrap gap-4">
+            <div className="space-y-6">
+              {/* Prominent high-contrast primary CTA: Contact Us */}
               <button 
-                onClick={() => setActiveTab("planner")}
-                className="bg-[#c5a059] text-slate-950 px-6 py-3 font-bold hover:bg-yellow-500 transition rounded-sm text-sm flex items-center space-x-2 shadow-lg"
+                onClick={() => {
+                  const element = document.getElementById("customer-inquiry-section");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
+                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 px-6 py-3.5 font-black rounded-sm text-sm flex items-center space-x-2.5 shadow-2xl transition duration-300 transform hover:scale-[1.02] cursor-pointer"
               >
-                <Sparkles className="w-4 h-4 fill-current text-slate-950" />
-                <span>{t[lang].ctaStart}</span>
+                <Phone className="w-4.5 h-4.5 text-slate-950" />
+                <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
+                <ArrowRight className="w-4 h-4 text-slate-950 ml-1" />
               </button>
-              <button 
-                onClick={() => setActiveTab("clusters")}
-                className="border border-white/30 text-white hover:bg-white/10 px-6 py-3 font-bold transition rounded-sm text-sm backdrop-blur-sm"
-              >
-                {t[lang].navClusters}
-              </button>
-              <button 
-                onClick={() => setActiveTab("aql")}
-                className="bg-white/10 text-white hover:bg-white/20 px-6 py-3 font-semibold transition rounded-sm text-sm flex items-center space-x-2"
-              >
-                <Calculator className="w-4 h-4 text-[#c5a059]" />
-                <span>{t[lang].ctaAql}</span>
-              </button>
-            </div>
-          </div>
 
-          {/* Premium Services Summary Ribbon Overlay */}
-          <div className="mt-12 max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pt-10 border-t border-white/10">
-            <div className="bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-sm">
-              <h3 className="text-[#c5a059] font-bold text-xs uppercase tracking-wider mb-1 flex items-center space-x-1.5">
-                <Building className="w-3.5 h-3.5" />
-                <span>{t[lang].info1Title}</span>
-              </h3>
-              <p className="text-xs text-slate-300 leading-normal">{t[lang].info1Desc}</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-sm">
-              <h3 className="text-[#c5a059] font-bold text-xs uppercase tracking-wider mb-1 flex items-center space-x-1.5">
-                <Coins className="w-3.5 h-3.5" />
-                <span>{t[lang].info2Title}</span>
-              </h3>
-              <p className="text-xs text-slate-300 leading-normal">{t[lang].info2Desc}</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-sm">
-              <h3 className="text-[#c5a059] font-bold text-xs uppercase tracking-wider mb-1 flex items-center space-x-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>{t[lang].info3Title}</span>
-              </h3>
-              <p className="text-xs text-slate-300 leading-normal">{t[lang].info3Desc}</p>
-            </div>
-            <div className="bg-white/5 p-4 rounded-sm border border-white/10 backdrop-blur-sm">
-              <h3 className="text-[#c5a059] font-bold text-xs uppercase tracking-wider mb-1 flex items-center space-x-1.5">
-                <Globe className="w-3.5 h-3.5" />
-                <span>{t[lang].info4Title}</span>
-              </h3>
-              <p className="text-xs text-slate-300 leading-normal">{t[lang].info4Desc}</p>
+              {/* Shrunken, secondary, compact tools row */}
+              <div className="flex flex-wrap items-center gap-2 pt-2">
+                <span className="text-[9px] text-slate-400 mr-2 uppercase tracking-widest font-mono font-bold">
+                  {lang === "zh" ? "智能分析终端工具车：" : "Core Engines Console:"}
+                </span>
+                
+                <button 
+                  onClick={() => setActiveTab("planner")}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
+                  title={lang === "zh" ? "生成AI采购企划" : "Launch AI planner"}
+                >
+                  <Sparkles className="w-3 h-3 text-[#c5a059]" />
+                  <span>{lang === "zh" ? "AI 采购企划" : "AI Planner"}</span>
+                </button>
+                
+                <button 
+                  onClick={() => setActiveTab("clusters")}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
+                  title={lang === "zh" ? "核心产业带集群图" : "View clusters"}
+                >
+                  <Globe className="w-3 h-3 text-[#c5a059]" />
+                  <span>{lang === "zh" ? "核心产业带图" : "Industrial Clusters"}</span>
+                </button>
+
+                <button 
+                  onClick={() => setActiveTab("aql")}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
+                  title={lang === "zh" ? "自动计算抽检数" : "AQL standards calculation"}
+                >
+                  <Calculator className="w-3 h-3 text-[#c5a059]" />
+                  <span>{lang === "zh" ? "自动计算抽检数" : "AQL Calculator"}</span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
       )}
 
-      {/* Main Dynamic Viewport */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 space-y-12">
 
-        {/* ==================== HOME TAB VIEWPORT ==================== */}
-        {activeTab === "home" && (
-          <section id="view-dashboard" className="space-y-12">
-            
-            {/* Quick Sourcing Flow Overview for Non-Technical Users */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm relative overflow-hidden">
+      {/* ==================== HOME TAB VIEWPORT ==================== */}
+      {activeTab === "home" && (
+        <section id="view-dashboard" className="space-y-12">
+          
+          {/* Quick Sourcing Flow Overview for Non-Technical Users */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Left Core features container - Now takes 4/5ths of the desktop slot to look extremely grand */}
+              <div className="lg:col-span-4 bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm relative overflow-hidden flex flex-col justify-between">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 filter blur-xl"></div>
-                <div className="relative z-10">
-                  <span className="text-xs font-bold text-[#c5a059] tracking-widest uppercase block mb-1">
-                    {lang === "zh" ? "核心服务特色" : "ENTERPRISE CAPABILITIES"}
-                  </span>
-                  <h2 className="text-2xl md:text-3xl font-extrabold text-[#003580] leading-snug mb-4">
-                    {lang === "zh" ? "穿透各环节的跨境采购代理标准" : "Bridging International Demands with High-Density Chinese Industrial Hubs"}
-                  </h2>
-                  <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-                    {lang === "zh" ? 
-                      "我们独立于任何生产工厂，代表唯一的买方利益。通过严格将每个工厂流程量化、精细追踪，为您在模具校调、出厂终检等物理点实施闭环管控，消除供应链盲区。" : 
-                      "SinoSource functions as your direct physical proxy inside China. We negotiate strictly for the importer's interest, cutting through secondary trade brokers, stabilizing delivery lead times, and maintaining rigorous AQL standard oversight."
-                    }
-                  </p>
+                
+                <div className="relative z-10 space-y-6">
+                  <div>
+                    <span className="text-xs font-black text-[#c5a059] tracking-widest uppercase block mb-1">
+                      {lang === "zh" ? "核心服务特色" : "ENTERPRISE CAPABILITIES"}
+                    </span>
+                    <h2 className="text-2xl md:text-3xl font-black text-[#003580] leading-snug">
+                      {lang === "zh" ? "穿透各环节的跨境采购代理标准" : "Bridging International Demands with High-Density Chinese Industrial Hubs"}
+                    </h2>
+                  </div>
+
+                  {/* Highlighted prominent quote with gorgeous styling for maximal noticeability and top aesthetics */}
+                  <div className="bg-gradient-to-r from-[#fefbf6] to-[#fbf7ee] border-l-4 border-[#c5a059] p-6 rounded-r-md my-6 shadow-sm">
+                    <p className="text-amber-950 font-black text-sm md:text-base leading-relaxed">
+                      {lang === "zh" ? (
+                        <>
+                          “我们独立于任何生产工厂，代表<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">唯一的买方利益</span>。通过严格将每个工厂流程量化、精细追踪，为您在模具校调、出厂终检等<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">物理点实施闭环管控</span>，消除供应链盲区。”
+                        </>
+                      ) : (
+                        <>
+                          “We operate strictly independent of any manufacturing facility, representing <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">your buyer interests alone</span>. By quantifying and tracking each dynamic metric on the floor, we deliver watertight physical closure on mold calibration and pre-shipment sampling, completely <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">eliminating supply chain blind spots</span>.”
+                        </>
+                      )}
+                    </p>
+                    <div className="text-[10px] text-[#c5a059] uppercase tracking-widest font-mono font-bold mt-3">
+                      {lang === "zh" ? "★ 双检质检长行政指令保证" : "★ DUAL-POINT QUALITY OVERSIGHT PROTOCOL"}
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-700">
-                    <div className="flex items-center space-x-2 p-2 bg-slate-50 border-l-4 border-[#003580]">
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
                       <span>{lang === "zh" ? "双重开箱检测：工序中段+出货前" : "Dual-Point Quality Control Inspections"}</span>
                     </div>
-                    <div className="flex items-center space-x-2 p-2 bg-slate-50 border-l-4 border-[#003580]">
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
                       <span>{lang === "zh" ? "合规审查：重金属、无双酚A、CE安全认证" : "Chemical Certifications & Compliance Audit"}</span>
                     </div>
-                    <div className="flex items-center space-x-2 p-2 bg-slate-50 border-l-4 border-[#003580]">
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
                       <span>{lang === "zh" ? "自有海关集拼货位，无惧排队旺季" : "Dedicated Bonded Consolidation Storage"}</span>
                     </div>
-                    <div className="flex items-center space-x-2 p-2 bg-slate-50 border-l-4 border-[#003580]">
+                    <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
                       <span>{lang === "zh" ? "多国语言商务经理与工程师现场同频" : "Native-Speaking Business Liaison & Engineers"}</span>
                     </div>
                   </div>
+
+                  {/* Refined Optimised 4-step Procurement Flow / Stepper - "更精炼更显眼的表述" */}
+                  <div className="border-t border-slate-100 pt-6 mt-6">
+                    <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase block mb-3.5 font-mono">
+                      {lang === "zh" ? "华源物理品控闭环流程 (精炼执行)" : "SINOSOURCE SECURED PHYSICAL SOURCING ECOSYSTEM"}
+                    </span>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                      <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
+                        <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 01.</div>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "校模开模" : "Tooling Check"}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "首样公差极致锁定在 ±0.03mm 内，排除渗漏风险" : "Strictly anchoring tooling tolerances within ±0.03mm limits"}</p>
+                      </div>
+                      
+                      <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
+                        <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 02.</div>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "量化巡检" : "Dynamic Audit"}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "在制程中巡回抽验检测硬度公差、材料应变力" : "Dynamic floor audits securing hardness, wall-density and raw elements"}</p>
+                      </div>
+
+                      <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
+                        <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 03.</div>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "AQLII终检" : "AQL-II Sealing"}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "依照国际 ISO 2859-1 表格，多重性能破坏性测试" : "statistical extraction & destructive physical tests on batch completion"}</p>
+                      </div>
+
+                      <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
+                        <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 04.</div>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "完税交付" : "DDP Lock-In"}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "全程DDP一口价包税多模联运，海外库房直达" : "Cleared complete DDP customs and door delivered to client warehouse"}</p>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
-              {/* Sidebar Quick-Action: Launch AI Planner */}
-              <div className="bg-[#001c44] text-white p-6 md:p-8 rounded-sm shadow-md border-t-4 border-[#c5a059] flex flex-col justify-between">
-                <div>
-                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mb-4">
-                    <Sparkles className="w-6 h-6 text-[#c5a059]" />
+              {/* Sidebar Quick-Action: Shrunken AI Planner (缩小右边的AI推演) - Now only taking 1/5th column! */}
+              <div className="lg:col-span-1 bg-slate-950 text-white p-4 rounded-sm shadow-md border-t-4 border-[#c5a059] flex flex-col justify-between text-xs space-y-4">
+                <div className="space-y-2.5">
+                  <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-4.5 h-4.5 text-[#c5a059]" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-white">
-                    {lang === "zh" ? "AI 供应链推演" : "AI Sourcing Simulator"}
-                  </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed mb-6">
-                    {lang === "zh" ? 
-                      "根据商品特长定制化调取在库中国产业带数据库，秒级计算供应商地理集群配给，提供极具指导性的海关HS编码和量产周期预测。" : 
-                      "Evaluate manufacture regions, projected delivery cycles, standard defects tolerance and sea logistics in seconds with our integrated Gemini assistant node."
-                    }
-                  </p>
+                  <div>
+                    <h3 className="text-xs font-black text-[#c5a059] uppercase tracking-wider">
+                      {lang === "zh" ? "AI 供应链模拟" : "AI Simulation"}
+                    </h3>
+                    <p className="text-[10.5px] text-slate-300 leading-snug mt-1">
+                      {lang === "zh" ? 
+                        "在线测算产业地分布及生产流程周期，物理核查出货缺陷。" : 
+                        "Instantly calculate manufacturing nodes & model dynamic defect frequencies."
+                      }
+                    </p>
+                  </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-1.5 pt-2 border-t border-white/10">
                   <button 
                     onClick={() => {
                       setActiveTab("planner");
                       setTimeout(handleLoadSampleData, 100);
                     }}
-                    className="w-full bg-[#c5a059] text-[#001c44] py-2.5 font-bold rounded-sm text-xs uppercase tracking-wider hover:bg-yellow-500 transition block text-center"
+                    className="w-full bg-[#c5a059] text-slate-950 py-1 font-black rounded-sm text-[10px] uppercase tracking-wider hover:bg-yellow-500 transition block text-center cursor-pointer"
                   >
                     {t[lang].useSample}
                   </button>
                   <button 
                     onClick={() => setActiveTab("planner")}
-                    className="w-full border border-white/20 hover:bg-white/10 py-2.5 font-bold rounded-sm text-xs transition block text-center"
+                    className="w-full border border-white/20 hover:bg-white/10 py-1 font-bold rounded-sm text-[10px] transition block text-center cursor-pointer text-slate-300"
                   >
-                    {lang === "zh" ? "进入决策面板 →" : "Open Planning Tool →"}
+                    {lang === "zh" ? "进入专属企划面板" : "Launch Planner →"}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ==================== SINO-SOURCE GLOBAL MARITIME & FACTORY QUALITY SCHEMATIC ==================== */}
-            <div id="maritime-sourcing-gateway-map" className="bg-[#001c44] text-white p-6 md:p-10 border-t-4 border-[#c5a059] rounded-sm shadow-lg space-y-8 relative overflow-hidden">
-              {/* Abstract overlay network lines */}
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-yellow-200 via-blue-900 to-transparent"></div>
-              
-              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-white/10 pb-6">
-                <div>
-                  <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
-                    {lang === "zh" ? "全息物理品控廊道图" : "GLOBAL QUALITY-ASSURANCED FREIGHT ROUTE MAP"}
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight mt-1">
-                    {lang === "zh" ? "万箱远洋巨轮与跨境闭环物理质检全图景" : "Advanced Sourcing: Ocean Vessel & Factory Dispatch System"}
-                  </h3>
-                  <p className="text-xs text-slate-300 mt-2 max-w-3xl leading-relaxed">
-                    {lang === "zh" ? 
-                      "我们为您精细打通“大陆工厂”、“海口集拼双检”、“海上航道”、“完税 DDP 门对门”四大阶段，把原本不透明的跨境物理货运全流程以直观的可视化仪表端和 AQL 高标准保障呈递至您的屏幕前。" : 
-                      "We physically bridge raw metal processing, AQL double-point sealing, maritime container vessel routes, and import customs-cleared DDP delivery into one continuous visible monitor portal."
-                    }
-                  </p>
-                </div>
-                
-                <div className="flex bg-white/5 border border-white/10 p-1 rounded font-mono shrink-0">
-                  <span className="text-[10px] text-[#c5a059] font-bold px-3 py-1.5 uppercase">
-                    SYS.ROUTE: STABLE (全线畅通)
-                  </span>
-                </div>
-              </div>
-
-              {/* Responsive Elegant SVG Diagram */}
-              <div className="relative bg-slate-950/40 p-4 md:p-6 rounded border border-white/5 backdrop-blur-sm">
-                
-                {/* Responsive SVG Visual map */}
-                <div className="w-full hidden md:block">
-                  <svg viewBox="0 0 800 220" className="w-full h-auto" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Ocean Wave lines in the background */}
-                    <path d="M 10 160 Q 200 170, 400 160 T 790 160" stroke="#003580" strokeWidth="2" strokeDasharray="5, 5" />
-                    <path d="M 10 175 Q 180 185, 380 175 T 790 180" stroke="#1E40AF" strokeWidth="1" />
-                    
-                    {/* Glowing flow connection path */}
-                    <path d="M 100 110 L 280 110 L 480 110 L 680 110" stroke="#ffffff" strokeWidth="1" strokeDasharray="6, 6" />
-                    {/* Completed route highlight */}
-                    <path 
-                      d={`M 100 110 L ${activeRouteStep >= 1 ? 280 : 100} L ${activeRouteStep >= 2 ? 480 : 280} L ${activeRouteStep >= 3 ? 680 : 480}`} 
-                      stroke="#c5a059" 
-                      strokeWidth="2" 
-                      className="transition-all duration-500" 
-                    />
-
-                    {/* Left node (China Factories) */}
-                    <g className="cursor-pointer" onClick={() => setActiveRouteStep(0)}>
-                      {/* Base factory icon/symbol drawn */}
-                      <rect x="75" y="65" width="50" height="40" rx="3" fill="#001c44" stroke={activeRouteStep === 0 ? "#c5a059" : "#3b82f6"} strokeWidth="2" />
-                      {/* Chimneys */}
-                      <line x1="85" y1="65" x2="85" y2="50" stroke="#3b82f6" strokeWidth="3" />
-                      <line x1="95" y1="65" x2="95" y2="45" stroke="#3b82f6" strokeWidth="3" />
-                      <line x1="105" y1="65" x2="105" y2="52" stroke="#3b82f6" strokeWidth="3" />
-                      {/* Active indicator circle */}
-                      <circle cx="100" cy="110" r="10" fill={activeRouteStep === 0 ? "#c5a059" : "#3b82f6"} />
-                      <circle cx="100" cy="110" r="15" stroke={activeRouteStep === 0 ? "#c5a059" : "transparent"} strokeWidth="1.5" className={activeRouteStep === 0 ? "animate-pulse" : ""} />
-                      <text x="100" y="145" textAnchor="middle" fill={activeRouteStep === 0 ? "#c5a059" : "#94a3b8"} fontSize="11" fontWeight="bold">
-                        {lang === "zh" ? "1. 精密制造工厂" : "1. Custom Factory"}
-                      </text>
-                      <text x="100" y="160" textAnchor="middle" fill="#64748b" fontSize="9">
-                        {lang === "zh" ? "原料及开模工差点" : "CNC Tooling & Pre-check"}
-                      </text>
-                    </g>
-
-                    {/* Step 2 (Bonded customs double-checks) */}
-                    <g className="cursor-pointer" onClick={() => setActiveRouteStep(1)}>
-                      {/* Shield verification house */}
-                      <polygon points="260,60 280,50 300,60 300,90 280,100 260,90" fill="#001c44" stroke={activeRouteStep === 1 ? "#c5a059" : "#3b82f6"} strokeWidth="2" />
-                      {/* Check mark inside shield */}
-                      <path d="M 273 75 L 278 82 L 288 70" stroke="#c5a059" strokeWidth="2" strokeLinecap="round" />
-                      
-                      <circle cx="280" cy="110" r="10" fill={activeRouteStep === 1 ? "#c5a059" : "#3b82f6"} />
-                      <circle cx="280" cy="110" r="15" stroke={activeRouteStep === 1 ? "#c5a059" : "transparent"} strokeWidth="1.5" className={activeRouteStep === 1 ? "animate-pulse" : ""} />
-                      <text x="280" y="145" textAnchor="middle" fill={activeRouteStep === 1 ? "#c5a059" : "#94a3b8"} fontSize="11" fontWeight="bold">
-                        {lang === "zh" ? "2. 海口集拼双检" : "2. AQL Sealing"}
-                      </text>
-                      <text x="280" y="160" textAnchor="middle" fill="#64748b" fontSize="9">
-                        {lang === "zh" ? "大货抽样+安全防窜签" : "AQL II Rejection Threshold"}
-                      </text>
-                    </g>
-
-                    {/* Step 3 (Deep sea vessel transit) */}
-                    <g className="cursor-pointer" onClick={() => setActiveRouteStep(2)}>
-                      {/* Modern Cargo container ship silhouette */}
-                      <path d="M 440 90 L 520 90 L 515 105 L 445 105 Z" fill="#001c44" stroke={activeRouteStep === 2 ? "#c5a059" : "#3b82f6"} strokeWidth="2" />
-                      {/* Containers stacked */}
-                      <rect x="450" y="78" width="12" height="12" fill="#c5a059" rx="1" />
-                      <rect x="464" y="78" width="12" height="12" fill="#3b82f6" rx="1" />
-                      <rect x="478" y="78" width="12" height="12" fill="#10b981" rx="1" />
-                      <rect x="457" y="66" width="12" height="12" fill="#f59e0b" rx="1" />
-                      <rect x="471" y="66" width="12" height="12" fill="#3b82f6" rx="1" />
-
-                      <circle cx="480" cy="110" r="10" fill={activeRouteStep === 2 ? "#c5a059" : "#3b82f6"} />
-                      <circle cx="480" cy="110" r="15" stroke={activeRouteStep === 2 ? "#c5a059" : "transparent"} strokeWidth="1.5" className={activeRouteStep === 2 ? "animate-pulse" : ""} />
-                      <text x="480" y="145" textAnchor="middle" fill={activeRouteStep === 2 ? "#c5a059" : "#94a3b8"} fontSize="11" fontWeight="bold">
-                        {lang === "zh" ? "3. 万箱远洋巨轮" : "3. Maritime Carrier"}
-                      </text>
-                      <text x="480" y="160" textAnchor="middle" fill="#64748b" fontSize="9">
-                        {lang === "zh" ? "大洋干线安全海运" : "Deep Sea Transit Logs"}
-                      </text>
-                    </g>
-
-                    {/* Step 4 (Buyer terminal DDP) */}
-                    <g className="cursor-pointer" onClick={() => setActiveRouteStep(3)}>
-                      {/* Warehouse handover terminal */}
-                      <rect x="655" y="65" width="50" height="40" rx="4" fill="#001c44" stroke={activeRouteStep === 3 ? "#c5a059" : "#3b82f6"} strokeWidth="2" />
-                      {/* Handshake line artwork */}
-                      <path d="M 665 85 L 695 85 M 680 75 L 680 95" stroke="#c5a059" strokeWidth="1.5" />
-                      
-                      <circle cx="680" cy="110" r="10" fill={activeRouteStep === 3 ? "#c5a059" : "#3b82f6"} />
-                      <circle cx="680" cy="110" r="15" stroke={activeRouteStep === 3 ? "#c5a059" : "transparent"} strokeWidth="1.5" className={activeRouteStep === 3 ? "animate-pulse" : ""} />
-                      <text x="680" y="145" textAnchor="middle" fill={activeRouteStep === 3 ? "#c5a059" : "#94a3b8"} fontSize="11" fontWeight="bold">
-                        {lang === "zh" ? "4. 采购商DDP安全收货" : "4. Handover to Buyer"}
-                      </text>
-                      <text x="680" y="160" textAnchor="middle" fill="#64748b" fontSize="9">
-                        {lang === "zh" ? "含税清关・到门无忧" : "DDP Customs Door Delivery"}
-                      </text>
-                    </g>
-
-                  </svg>
-                </div>
-
-                {/* Mobile version of map (vertical path) to support perfect phone layouts */}
-                <div className="block md:hidden space-y-4">
-                  <div className="grid grid-cols-4 gap-2 text-center">
-                    {[
-                      { id: 0, label: lang === "zh" ? "1. 工厂制造" : "1. Factory" },
-                      { id: 1, label: lang === "zh" ? "2. 大货双检" : "2. AQL Sealing" },
-                      { id: 2, label: lang === "zh" ? "3. 船方海运" : "3. Vessel Sea" },
-                      { id: 3, label: lang === "zh" ? "4. DDP交付" : "4. Handover" }
-                    ].map((step) => (
-                      <button
-                        key={step.id}
-                        type="button"
-                        onClick={() => setActiveRouteStep(step.id)}
-                        className={`p-2.5 rounded-sm border text-[11px] font-bold uppercase transition flex flex-col items-center justify-center space-y-1.5 cursor-pointer ${activeRouteStep === step.id ? "bg-[#c5a059]/20 border-[#c5a059] text-white" : "bg-black/25 border-white/5 text-slate-400"}`}
-                      >
-                        <span className={`w-2.5 h-2.5 rounded-full ${activeRouteStep === step.id ? "bg-[#c5a059]" : "bg-slate-600"}`}></span>
-                        <span>{step.label}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Elegant micro shipping asset display */}
-                  <div className="bg-slate-900/60 p-4 border border-white/5 rounded-sm flex items-center justify-between space-x-3">
-                    <div className="flex items-center space-x-2.5">
-                      <div className="w-9 h-9 bg-[#001c44] rounded flex items-center justify-center shrink-0 border border-[#c5a059]/40">
-                        {activeRouteStep === 0 && <Building className="w-5 h-5 text-[#c5a059]" />}
-                        {activeRouteStep === 1 && <ShieldCheck className="w-5 h-5 text-[#c5a059]" />}
-                        {activeRouteStep === 2 && <Globe className="w-5 h-5 text-[#c5a059]" />}
-                        {activeRouteStep === 3 && <CheckCircle2 className="w-5 h-5 text-[#c5a059]" />}
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[#c5a059] uppercase font-bold tracking-wider font-mono">Current Station Details</span>
-                        <h4 className="text-xs font-bold text-white">
-                          {activeRouteStep === 0 && (lang === "zh" ? "精工制造：物理精雕出厂" : "Precision Assembly: Mold Tolerances")}
-                          {activeRouteStep === 1 && (lang === "zh" ? "集拼把关：AQLII 批次废止阀值" : "Sealing Gate: AQL Inspection Seals")}
-                          {activeRouteStep === 2 && (lang === "zh" ? "巨轮劈波：集装箱深远海航路" : "Ocean Vessel: Sealed Ocean Container")}
-                          {activeRouteStep === 3 && (lang === "zh" ? "到门完税：一站式 DDP 最终交付" : "Secure Gate: Final Handover completed")}
-                        </h4>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-[#10b981]/10 px-1.5 py-0.5 rounded uppercase shrink-0 font-mono">
-                      Safe
-                    </span>
-                  </div>
-                </div>
-
-                {/* Information Card panel updated based on selection */}
-                <div className="mt-4 bg-slate-950/60 p-5 rounded border border-white/10 grid grid-cols-1 md:grid-cols-12 gap-6 items-center text-left">
-                  
-                  {/* Interactive details */}
-                  <div className="md:col-span-8 space-y-2">
-                    
-                    {activeRouteStep === 0 && (
-                      <>
-                        <h4 className="text-[#c5a059] font-bold text-sm uppercase tracking-wide flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-[#c5a059] rounded-full"></span>
-                          <span>[工站 01] 大陆源头精密开模与物理制造 (High-Precision Chinese Factory Floor)</span>
-                        </h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          {lang === "zh" ? 
-                            "品控第一线始于加工厂机床和冷冲模具工艺。华源工程师进驻车间，对首期钢材级真空抽压腔内径壁、硅胶密封阻圈实施物理测径规比对，开模公差牢固锚定在国际高标准的 ±0.03mm 幅度内，绝对规避废料回炉引起的材质碳化污染。" : 
-                            "Quality checks commence in deep-drawing press molds. Our on-site mechanical engineers audit metal formulation certificates, wall thickness and silicon ring elastic tolerances to lock raw steel specifications inside precise ±0.03mm thresholds."
-                          }
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2 text-[10px] font-mono">
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">CNC Precision: ±0.03mm Max</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Material Standard: FDA Food Grade S30408</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Chemical Compliance: Passed (No BPA/Heavy Metal)</span>
-                        </div>
-                      </>
-                    )}
-
-                    {activeRouteStep === 1 && (
-                      <>
-                        <h4 className="text-[#c5a059] font-bold text-sm uppercase tracking-wide flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-[#c5a059] rounded-full"></span>
-                          <span>[工站 02] 海关集拼监管：物理双检与合规加印 (Bonded Hub & Rigid Dual Check Sealing)</span>
-                        </h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          {lang === "zh" ? 
-                            "在大批货品进入集装箱之前，华源在宁波及深圳设有自有集箱监管工位。在此，质检部推派具有10年以上经验的理货长进行 AQL 抽样。一旦整批缺陷点超越接收极限（例如3500件抽200件，出现第11个缺陷），当场锁扣封箱回程，绝不正将风险带上公海。" : 
-                            "Before oceanic dispatch, cargo is centralized in custom-supervised hub facilities. Under ISO 2859-1 criteria, senior inspectors perform unboxing audits. If defect limits are crossed, freight is locked inside the province and recycled immediately."
-                          }
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2 text-[10px] font-mono">
-                          <span className="bg-[#10b981]/10 text-emerald-400 border border-[#10b981]/20 px-2 py-1 rounded">AQL sampling: ISO 2859-1 standards</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Anti-Counterfeit Tag: Physical Lead Seal</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Customs Clearance Index: AAA level</span>
-                        </div>
-                      </>
-                    )}
-
-                    {activeRouteStep === 2 && (
-                      <>
-                        <h4 className="text-[#c5a059] font-bold text-sm uppercase tracking-wide flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-[#c5a059] rounded-full"></span>
-                          <span>[工站 03] 深深大洋干线安全海运：万箱巨轮航程追踪 (Secure Deep-Sea Ocean Transit Vessels)</span>
-                        </h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          {lang === "zh" ? 
-                            "在茫茫大海中，通过数字货描锁定万千重箱的运输状态。货品防潮抽真空纸箱坚固固定在特型高重力防撞架内部，中控系统通过海事地理坐标（AIS 信号）同频对货班实况、预计抵达口岸（如巴塞罗那港、鹿特丹港、洛杉矶港）执行闭环时效调度。" : 
-                            "Your custom cargo boards modern panamax container ships. Packed tightly inside pressure-tested outer cartons with heavy corner palettes, container positions are continually referenced via direct real-time maritime AIS telemetry logs."
-                          }
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2 text-[10px] font-mono">
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Voyage Vessel: MAERSK / COSCO Prestige Liner</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Transit Humidity Control: Below 40% RH</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">AIS Geo-Tracking: Enabled</span>
-                        </div>
-                      </>
-                    )}
-
-                    {activeRouteStep === 3 && (
-                      <>
-                        <h4 className="text-[#c5a059] font-bold text-sm uppercase tracking-wide flex items-center space-x-2">
-                          <span className="w-2 h-2 bg-[#c5a059] rounded-full"></span>
-                          <span>[工站 04] DDP 双清关安全落地：买方终点完美递交付托 (Seamless Destination Handover & Door Delivery)</span>
-                        </h4>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          {lang === "zh" ? 
-                            "海运安全抵达卸货港后，华源本土物流链接管海卡联运。办理全套海关完税手续、清扫码头杂费，由集美、联邦等战略卡班直接派送到您的境外中心库房。您只需要在库门核对加贴的唯一品控防伪标签，拆包即用，省心无虞。" : 
-                            "Post-discharge logistics are smoothly handed over to bonded trucks. Fully custom-cleared on DDP terms, the cargo slides directly to your foreign warehouse dock. Buyers sign only of physical seals check, taking possession with complete clarity."
-                          }
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-2 text-[10px] font-mono">
-                          <span className="bg-[#10b981]/10 text-emerald-400 border border-[#10b981]/20 px-2 py-1 rounded">DDP: Full Customs tax & Duty Paid</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Delivery Status: Secure Handshake Signature</span>
-                          <span className="bg-white/5 border border-white/10 px-2 py-1 rounded text-slate-300">Anti-Theft Protocol: Encrypted Lead Code</span>
-                        </div>
-                      </>
-                    )}
-
-                  </div>
-
-                  {/* Sidebar stats panel */}
-                  <div className="md:col-span-4 bg-white/5 p-4 rounded border border-white/10 space-y-3.5 text-xs">
-                    <span className="text-[10px] text-[#c5a059] uppercase font-bold tracking-wider font-mono block">
-                      {lang === "zh" ? "工艺品控追踪状态面板" : "TELEMETRY METRIC CONSOLE"}
-                    </span>
-                    
-                    <div className="space-y-2 font-mono text-[11px]">
-                      <div className="flex justify-between border-b border-white/15 pb-1.5 font-sans">
-                        <span className="text-slate-400">Node Status:</span>
-                        <span className="font-bold text-emerald-400">● {lang === "zh" ? "正常流通" : "NORMAL"}</span>
-                      </div>
-                      <div className="flex justify-between border-b border-white/15 pb-1.5 font-sans">
-                        <span className="text-slate-400">Integrity:</span>
-                        <span className="font-bold text-slate-100">100.0% Approved</span>
-                      </div>
-                      <div className="flex justify-between border-b border-white/15 pb-1.5 font-sans">
-                        <span className="text-slate-400">Seals Standard:</span>
-                        <span className="font-bold text-[#c5a059]">ISO 2859-1 II</span>
-                      </div>
-                      <div className="flex justify-between font-sans">
-                        <span className="text-slate-400">Audit Protocol:</span>
-                        <span className="font-bold text-slate-100">DDP Door Delivery</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-1.5 text-center">
-                      <button
-                        onClick={() => {
-                          const element = document.getElementById("customer-inquiry-section");
-                          if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }
-                        }}
-                        className="w-full bg-[#c5a059] text-slate-950 hover:bg-yellow-500 font-bold py-1.5 px-3 rounded text-[10px] uppercase tracking-wider transition-all cursor-pointer block text-center"
-                      >
-                        {lang === "zh" ? "对标此流程发起采购" : "Apply Sourcing My RFP"}
-                      </button>
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-            {/* Industrial Cluster Map Highlight teaser */}
-            <div className="bg-slate-100 p-6 md:p-8 border border-slate-200 rounded-sm">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900">{t[lang].clusterTitle}</h3>
-                  <p className="text-xs text-slate-500">{t[lang].clusterSub}</p>
-                </div>
-                <button 
-                  onClick={() => setActiveTab("clusters")}
-                  className="text-xs text-[#003580] font-bold hover:underline flex items-center space-x-1 self-start"
-                >
-                  <span>{lang === "zh" ? "浏览详细三个代表性产业带" : "View Detailed Industrial Clusters"}</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Grid of the clusters for brief preview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {industrialClustersList.map((cluster) => (
-                  <div 
-                    key={cluster.id} 
-                    onClick={() => {
-                      setSelectedCluster(cluster);
-                      setActiveTab("clusters");
-                    }}
-                    className="bg-white p-5 border border-slate-200 rounded-sm hover:border-[#c5a059] transition cursor-pointer group shadow-sm flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded-sm uppercase">
-                          {cluster.id}
-                        </span>
-                        <span className="text-xs font-bold text-[#c5a059]">Defects: {cluster.defectRate}</span>
-                      </div>
-                      <h4 className="text-sm font-bold text-slate-900 group-hover:text-[#003580] transition">
-                        {cluster.city}
-                      </h4>
-                      <p className="text-xs text-slate-600 mt-2 line-clamp-2">
-                        {cluster.specialty[lang]}
-                      </p>
-                    </div>
-                    <div className="border-t border-slate-100 mt-4 pt-3 flex items-center justify-between text-[11px] text-[#003580] font-semibold">
-                      <span>{t[lang].leadTime}: {cluster.leadTime[lang].substring(0, 10)}...</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* AQL sampling Quick Introduction and Tutorial Card */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-[#001c44] text-white rounded-sm p-6 md:p-8 overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-64 h-64 bg-slate-800/20 rounded-full filter blur-3xl"></div>
-              <div>
-                <span className="text-xs font-bold text-[#c5a059] tracking-widest uppercase block mb-2">
-                  {lang === "zh" ? "无偏见第三方品控基准" : "MATHEMATICAL ASSURANCE"}
+            {/* Spectacular, high-contrast Enterprise CTA Hero Billboard banner - 添加大的与我们联系功能块 */}
+            <div id="cta-billboard-banner" className="bg-gradient-to-r from-slate-900 via-[#001c44] to-slate-950 text-white p-8 rounded-sm shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-[#c5a059] relative overflow-hidden text-left">
+              <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl pointer-events-none"></div>
+              <div className="space-y-2 relative z-10 md:max-w-2xl">
+                <span className="text-[10px] font-mono font-black text-[#c5a059] tracking-widest uppercase bg-white/10 px-2.5 py-1 rounded-sm">
+                  {lang === "zh" ? "华源环球专享商洽渠道" : "SINOSOURCE EXCLUSIVE ENTERPRISE CHANNEL"}
                 </span>
-                <h3 className="text-2xl font-extrabold mb-4 leading-snug">
-                  {t[lang].aqlTitle}
+                <h3 className="text-xl md:text-2xl font-black text-white leading-tight uppercase">
+                  {lang === "zh" ? "准备好启动您的高端合规采购与严苛物理品控吗？" : "Ready to Safeguard Your Freight with Rigorous Inspections?"}
                 </h3>
-                <p className="text-xs text-slate-300 leading-relaxed mb-6">
+                <p className="text-slate-300 text-xs leading-relaxed max-w-xl">
                   {lang === "zh" ? 
-                    "SinoSource 绝不对供货工厂实行主观感官质检。我们强制依照国际公认 ISO 2859-1 表格标准，根据每个生产批量算出抽检基准、设定致命/主要/轻微缺陷阈值。如若抽样超出判定值整批就地扣回返工，维护您的资金安全。" : 
-                    "Ensure absolute clarity. Avoid random checks without sample calculation. We use the official ISO 2859-1 standards for statistical quality control, which allows importers to hold factories in Ningbo, Shenzhen or Foshan completely accountable based on standard mathematical sampling."
+                    "多国语品控团队及商务长已全线驻点产业带派单。点击下方按钮即可前往规格登记处，对接收集首期物料排产与价格物理评估。" : 
+                    "Connect directly with physical audit managers nested within raw materials and industrial centers. Secure pristine AQL results from day one."
                   }
                 </p>
-                <button 
-                  onClick={() => setActiveTab("aql")}
-                  className="bg-white text-slate-900 px-5 py-2.5 font-bold hover:bg-slate-100 transition rounded-sm text-xs flex items-center space-x-2"
-                >
-                  <Calculator className="w-4 h-4 text-[#003580]" />
-                  <span>{t[lang].ctaAql}</span>
-                </button>
               </div>
-              <div className="bg-white/10 p-5 rounded-sm border border-white/10 backdrop-blur-md space-y-4">
-                <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                  <span className="text-xs text-slate-300">{lang === "zh" ? "当前演示总数" : "Sample Batch Size"}</span>
-                  <span className="text-sm font-bold text-[#c5a059]">3,500 Units</span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 p-3 rounded-sm border border-white/5">
-                    <span className="text-[10px] text-slate-400 block uppercase">{lang === "zh" ? "应检样品" : "Extract Sample"}</span>
-                    <span className="text-lg font-black text-white">200 Pcs</span>
+              <button
+                onClick={() => {
+                  const element = document.getElementById("customer-inquiry-section");
+                  if (element) {
+                    element.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
+                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 font-black px-8 py-4 rounded-sm text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shrink-0 transform hover:scale-[1.03] cursor-pointer flex items-center space-x-2.5"
+              >
+                <Phone className="w-4 h-4 text-slate-950 animate-pulse" />
+                <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </button>
+            </div>
+
+            {/* Elegant, Shrunken 3-modules dashboard panel as requested */}
+            <div id="shrunken-modules-panel" className="bg-white border border-slate-200 rounded-sm p-4 text-left space-y-3 shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                  {lang === "zh" ? "核心智能引擎快进终端 (已精测压缩)" : "CORE MOTORS CONSOLIDATED TERMINAL (COMPACTED)"}
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  {lang === "zh" ? "点击切换专用作业面板" : "Switch workspace tab below"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                
+                {/* Module 1: AI Planner */}
+                <div 
+                  onClick={() => setActiveTab("planner")}
+                  className="bg-slate-50 hover:bg-slate-100/80 border border-slate-150 p-3 rounded-sm transition cursor-pointer flex items-center justify-between group"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-7 h-7 bg-[#003580]/10 text-[#003580] rounded flex items-center justify-center shrink-0">
+                      <Sparkles className="w-3.5 h-3.5 text-[#003580]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
+                        {lang === "zh" ? "A. AI采购企划" : "A. AI Sourcing Planner"}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 leading-none mt-1">
+                        {lang === "zh" ? "在线评估材料、量化出厂参数" : "Gemini AI-powered specs drafting"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-white/5 p-3 rounded-sm border border-white/5">
-                    <span className="text-[10px] text-slate-400 block uppercase">{lang === "zh" ? "合格接收最大缺陷数" : "Accept (Ac)"}</span>
-                    <span className="text-lg font-black text-emerald-400">10 Defects</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#003580] transition" />
+                </div>
+
+                {/* Module 2: Clusters */}
+                <div 
+                  onClick={() => setActiveTab("clusters")}
+                  className="bg-slate-50 hover:bg-slate-100/80 border border-slate-150 p-3 rounded-sm transition cursor-pointer flex items-center justify-between group"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-7 h-7 bg-[#c5a059]/10 text-[#c5a059] rounded flex items-center justify-center shrink-0">
+                      <Globe className="w-3.5 h-3.5 text-[#c5a059]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
+                        {lang === "zh" ? "B. 核心产业带图" : "B. Industrial Clusters"}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 leading-none mt-1">
+                        {lang === "zh" ? "打通各区域厂矿及港口配给" : "Ex-factory geographical analysis"}
+                      </p>
+                    </div>
                   </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#003580] transition" />
                 </div>
-                <div className="p-3 bg-red-950/30 rounded-sm border border-red-500/30 text-[11px] text-red-200">
-                  ⚠️ {lang === "zh" ? "第11个缺陷将导致该 3,500 货品整批废仓不付尾款" : "The 11th defect will trigger mandatory batch rejection."}
+
+                {/* Module 3: AQL Calculator */}
+                <div 
+                  onClick={() => setActiveTab("aql")}
+                  className="bg-slate-50 hover:bg-slate-100/80 border border-slate-150 p-3 rounded-sm transition cursor-pointer flex items-center justify-between group"
+                >
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-7 h-7 bg-indigo-50 text-indigo-700 rounded flex items-center justify-center shrink-0">
+                      <Calculator className="w-3.5 h-3.5 text-indigo-700" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
+                        {lang === "zh" ? "C. 自动计算抽检数" : "C. AQL Calculator"}
+                      </h4>
+                      <p className="text-[10px] text-slate-500 leading-none mt-1">
+                        {lang === "zh" ? "ISO AQLII工业级批量数算程序" : "Calculate batch sizes mathematically"}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#003580] transition" />
                 </div>
+
               </div>
             </div>
 
