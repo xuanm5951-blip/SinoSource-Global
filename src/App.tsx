@@ -490,7 +490,7 @@ function calculateAQL(batch: number, level: string) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Language>("zh"); // Defaulting to high-contrast Chinese, user has gorgeous header switches
+  const [lang, setLang] = useState<Language>("en"); // Defaulting to English interface upon visit
   const [activeTab, setActiveTab] = useState<string>("home");
   
   // Interactive Cluster State
@@ -923,7 +923,7 @@ export default function App() {
                 }
               }, 100);
             }}
-            className="bg-[#003580] text-white text-[12px] md:text-sm font-bold px-4 py-2 hover:bg-opacity-90 transition rounded-sm flex items-center shadow-sm cursor-pointer"
+            className="bg-[#003580] text-white text-[11px] md:text-xs font-bold px-3 py-1.5 hover:bg-opacity-90 transition rounded-sm flex items-center shadow-sm cursor-pointer"
           >
             {lang === "zh" ? "立即联系" : lang === "es" ? "Contactar" : lang === "ru" ? "Связаться" : "Contact Us"}
           </button>
@@ -982,19 +982,19 @@ export default function App() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl z-0"></div>
           
           <div className="relative max-w-5xl mx-auto z-10 font-sans">
-            <div className="flex items-center space-x-2.5 mb-4">
-              <span className="h-[2px] w-8 bg-[#c5a059]"></span>
-              <span className="text-[#c5a059] uppercase tracking-[0.25em] text-[10px] md:text-xs font-black">
+            <div className="flex items-center space-x-3 mb-5">
+              <span className="h-[2px] w-10 bg-[#c5a059]"></span>
+              <span className="text-[#c5a059] uppercase tracking-[0.3em] text-[11px] md:text-sm font-black">
                 {t[lang].tagline}
               </span>
             </div>
             
-            <h1 id="hero-heading" className="text-2xl md:text-5xl font-black tracking-tight mb-4 leading-none uppercase">
+            <h1 id="hero-heading" className="text-3xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-black tracking-tight mb-6 leading-[1.1] uppercase">
               <span className="text-white">{t[lang].heroHeadingPrefix} </span>
               <span className="text-[#c5a059]">{t[lang].heroHeadingSuf}</span>
             </h1>
             
-            <p className="text-slate-300 text-[11px] md:text-sm max-w-2xl leading-relaxed mb-8">
+            <p className="text-slate-300 text-xs md:text-base max-w-3xl leading-relaxed mb-10">
               {t[lang].heroSub}
             </p>
 
@@ -1007,7 +1007,7 @@ export default function App() {
                     element.scrollIntoView({ behavior: "smooth", block: "start" });
                   }
                 }}
-                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 px-6 py-3.5 font-black rounded-sm text-sm flex items-center space-x-2.5 shadow-2xl transition duration-300 transform hover:scale-[1.02] cursor-pointer"
+                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 px-4.5 py-2.5 font-black rounded-sm text-xs md:text-sm flex items-center space-x-2 shadow-xl transition duration-300 transform hover:scale-[1.01] cursor-pointer"
               >
                 <Phone className="w-4.5 h-4.5 text-slate-950" />
                 <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
@@ -1209,7 +1209,7 @@ export default function App() {
                     element.scrollIntoView({ behavior: "smooth", block: "start" });
                   }
                 }}
-                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 font-black px-8 py-4 rounded-sm text-sm uppercase tracking-wider transition-all duration-300 shadow-lg shrink-0 transform hover:scale-[1.03] cursor-pointer flex items-center space-x-2.5"
+                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 font-black px-5 py-2.5 rounded-sm text-xs md:text-sm uppercase tracking-wider transition-all duration-300 shadow-md shrink-0 transform hover:scale-[1.01] cursor-pointer flex items-center space-x-2"
               >
                 <Phone className="w-4 h-4 text-slate-950 animate-pulse" />
                 <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
@@ -1518,52 +1518,52 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
                 {/* WHATSAPP */}
                 <a 
                   href="https://wa.me/8615618073092" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="group bg-emerald-50/50 hover:bg-emerald-50 p-5 border border-emerald-200/60 rounded-sm hover:border-emerald-400 hover:shadow-md transition-all flex items-start space-x-4 cursor-pointer"
+                  className="group bg-emerald-50/50 hover:bg-emerald-50 p-3.5 border border-emerald-200/50 rounded-sm hover:border-emerald-400 hover:shadow-sm transition-all flex items-center space-x-3 cursor-pointer text-left"
                 >
-                  <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-4 h-4 text-white" />
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 block">WhatsApp Support</span>
-                    <span className="text-sm font-black text-slate-900 block group-hover:text-emerald-700 transition">+86 156 1807 3092</span>
-                    <span className="text-[11px] text-slate-500 block">{lang === "zh" ? "点击立即发起会话 (在线)" : "Click to chat directly (Online)"}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] uppercase font-black tracking-wider text-emerald-600 block leading-tight">WhatsApp Support</span>
+                    <span className="text-xs font-black text-slate-900 block group-hover:text-emerald-700 transition leading-snug truncate">+86 156 1807 3092</span>
+                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "点击立即发起会话 (在线)" : "Click to chat directly (Online)"}</span>
                   </div>
                 </a>
 
                 {/* PHONE */}
                 <a 
                   href="tel:15618073092"
-                  className="group bg-blue-50/50 hover:bg-blue-50 p-5 border border-blue-200/60 rounded-sm hover:border-blue-400 hover:shadow-md transition-all flex items-start space-x-4 cursor-pointer"
+                  className="group bg-blue-50/50 hover:bg-blue-50 p-3.5 border border-blue-200/50 rounded-sm hover:border-blue-400 hover:shadow-sm transition-all flex items-center space-x-3 cursor-pointer text-left"
                 >
-                  <div className="w-10 h-10 bg-[#003580] rounded-full flex items-center justify-center shrink-0">
-                    <Phone className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-[#003580] rounded-full flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4 text-white" />
                   </div>
-                  <div className="space-y-1 flex-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#003580] block">{lang === "zh" ? "官方接听热线" : "Primary Phone"}</span>
-                    <span className="text-sm font-black text-slate-900 block group-hover:text-[#003580] transition">15618073092</span>
-                    <span className="text-[11px] text-slate-500 block">{lang === "zh" ? "一键拨打・紧急跨境排期" : "Click to Call・Urgent Sourcing"}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] uppercase font-black tracking-wider text-[#003580] block leading-tight">{lang === "zh" ? "官方接听热线" : "Primary Phone"}</span>
+                    <span className="text-xs font-black text-slate-900 block group-hover:text-[#003580] transition leading-snug truncate">15618073092</span>
+                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "一键拨打・紧急跨境排期" : "Click to Call・Urgent Sourcing"}</span>
                   </div>
                 </a>
 
                 {/* GOOGLE MAIL */}
                 <a 
                   href="mailto:xuanm5951@gmail.com"
-                  className="group bg-amber-50/50 hover:bg-amber-50 p-5 border border-amber-200/60 rounded-sm hover:border-amber-400 hover:shadow-md transition-all flex items-start space-x-4 cursor-pointer"
+                  className="group bg-amber-50/50 hover:bg-amber-50 p-3.5 border border-amber-200/50 rounded-sm hover:border-amber-400 hover:shadow-sm transition-all flex items-center space-x-3 cursor-pointer text-left"
                 >
-                  <div className="w-10 h-10 bg-[#c5a059] rounded-full flex items-center justify-center shrink-0">
-                    <Mail className="w-5 h-5 text-slate-950" />
+                  <div className="w-8 h-8 bg-[#c5a059] rounded-full flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4 text-slate-950" />
                   </div>
-                  <div className="space-y-1 flex-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-700 block">{lang === "zh" ? "谷歌官方邮箱" : "Google Inbox"}</span>
-                    <span className="text-sm font-black text-slate-900 block group-hover:text-amber-800 break-all transition">xuanm5951@gmail.com</span>
-                    <span className="text-[11px] text-slate-500 block">{lang === "zh" ? "发送完整图纸、规格说明书" : "Send spec PDFs & CAD models"}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[9px] uppercase font-black tracking-wider text-amber-700 block leading-tight">{lang === "zh" ? "谷歌官方邮箱" : "Google Inbox"}</span>
+                    <span className="text-xs font-black text-slate-900 block group-hover:text-amber-800 break-all transition leading-snug truncate">xuanm5951@gmail.com</span>
+                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "发送完整图势排期" : "Send spec PDFs & CAD"}</span>
                   </div>
                 </a>
 
