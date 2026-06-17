@@ -1624,7 +1624,7 @@ export default function App() {
                     {T("华源环球采购商务联络中心", "SinoSource Corporate Liaison Center")}
                   </h3>
                 </div>
-                <div className="text-xs text-slate-500 max-w-sm">
+                <div className="text-sm md:text-base font-bold text-slate-700 max-w-md leading-relaxed">
                   {T("欢迎全球采购伙伴直接连通。资深品控总监将在48小时内就材料采购可行性给予首期物理核实意见。", "Connect directly with our primary regional desks. Our senior quality managers will follow up on potential manufacturing lines.")}
                 </div>
               </div>
