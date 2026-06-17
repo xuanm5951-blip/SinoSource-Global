@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { 
   ShieldCheck, 
   Globe, 
@@ -490,7 +491,14 @@ function calculateAQL(batch: number, level: string) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Language>("en"); // Defaulting to English interface upon visit
+    const [lang, setLang] = useState<Language>("en"); // Defaulting to English interface upon visit
+
+  const T = (zh: React.ReactNode, en: React.ReactNode, es?: React.ReactNode, ru?: React.ReactNode): React.ReactNode => {
+    if (lang === "zh") return zh;
+    if (lang === "es") return es || en;
+    if (lang === "ru") return ru || en;
+    return en;
+  };
   const [activeTab, setActiveTab] = useState<string>("home");
   
   // Interactive Cluster State
@@ -515,6 +523,43 @@ export default function App() {
   const [showInquiryNotice, setShowInquiryNotice] = useState(false);
   const [isTrackerModalOpen, setIsTrackerModalOpen] = useState(false);
   const [adminSearch, setAdminSearch] = useState("");
+  const [emailCopied, setEmailCopied] = useState(false);
+
+  const handleCopyEmail = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const email = "xuanm5951@gmail.com";
+    navigator.clipboard.writeText(email)
+      .then(() => {
+        setEmailCopied(true);
+        setTimeout(() => {
+          setEmailCopied(false);
+        }, 5000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy email: ", err);
+      });
+  };
+
+  const getMailtoLink = () => {
+    const baseEmail = "xuanm5951@gmail.com";
+    const subjectText = inquiryProduct 
+      ? `${T("华源跨境采购需求线索：", "SinoSource Sourcing Inquiry: ")}${inquiryProduct}` 
+      : (T("华源全球供应链采购需求提单", "SinoSource Global Sourcing Request"));
+    
+    let bodyText = T("华源全球业务中心（SinoSource Global Sourcing Desk），您好：\n\n我希冀发起全球供应链采购寻源排期委派：\n\n", "Dear SinoSource Global Sourcing Desk,\n\nI would like to submit a global sourcing inquiry using this digital desk:\n\n");
+    bodyText += `=== ${T("采购需求规格提单 (Sourcing Profile)", "Sourcing Profile Details")} ===\n`;
+    bodyText += `${T("企业/联络主体名称", "Company / Representative Name")}: ${inquiryName || "(空 / Not provided)"}\n`;
+    bodyText += `${T("物理联系方式/社交", "Contact Number / Mobile / Social")}: ${inquiryContact || "(空 / Not provided)"}\n`;
+    bodyText += `${T("技术接收官方邮箱", "Corporate Official Email")}: ${inquiryEmail || "(空 / Not provided)"}\n`;
+    bodyText += `${T("寻源原材料品类", "Target Product / Material Category")}: ${inquiryProduct || "(空 / Not provided)"}\n`;
+    bodyText += `${T("计划体量或批量数", "Commercial Batch size / Volume")}: ${inquiryQty || "(空 / Not provided)"}\n`;
+    bodyText += `${T("意向贸易条款", "Proposed Incoterms")}: ${inquiryIncoterms || "FOB Ningbo Port"}\n`;
+    bodyText += `${T("多维定制参数/开模/公差及质检标准", "Physical Specs, Mold Tolerances & AQL Standards")}:\n${inquirySpecs || (T("(空 / Please specify any CAD file links or micrometric tolerance boundaries)", "(Not provided)"))}\n\n`;
+    bodyText += T("顺祝商祺，\n", "Best regards,\n");
+    bodyText += `${inquiryName || (T("华源全球采购伙伴", "SinoSource Partner"))}\n`;
+
+    return `mailto:${baseEmail}?subject=${encodeURIComponent(subjectText)}&body=${encodeURIComponent(bodyText)}`;
+  };
 
   const fetchInquiries = async () => {
     try {
@@ -636,7 +681,7 @@ export default function App() {
   const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiryName.trim() || !inquiryContact.trim() || !inquiryEmail.trim() || !inquiryProduct.trim()) {
-      setInquiryError(lang === "zh" ? "请填齐所有必填项（联络姓名、联系方式、邮箱和产品描述）" : "Please fill in all required fields.");
+      setInquiryError(T("请填齐所有必填项（联络姓名、联系方式、邮箱和产品描述）", "Please fill in all required fields."));
       return;
     }
 
@@ -687,8 +732,8 @@ export default function App() {
         contact: currentContact,
         email: currentEmail,
         productName: currentProduct,
-        quantity: currentQty || (lang === "zh" ? "暂未指定" : "Not Specified"),
-        specifications: currentSpecs || (lang === "zh" ? "无特殊工艺材质及 AQL 重点参数标示。" : "No special requests"),
+        quantity: currentQty || (T("暂未指定", "Not Specified")),
+        specifications: currentSpecs || (T("无特殊工艺材质及 AQL 重点参数标示。", "No special requests")),
         incoterms: currentIncoterms,
         status: "Reviewing (资深总监评估中)",
         createdAt: new Date().toISOString()
@@ -787,7 +832,7 @@ export default function App() {
   const handleGeneratePlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productDesc.trim()) {
-      alert(lang === "zh" ? "请输入您想要采购的产品特长需求描述" : "Please input product descriptions");
+      alert(T("请输入您想要采购的产品特长需求描述", "Please input product descriptions"));
       return;
     }
 
@@ -836,7 +881,7 @@ export default function App() {
             type="button"
             onClick={() => setIsTrackerModalOpen(true)}
             className="relative w-11 h-11 bg-slate-950 flex items-center justify-center rounded-sm shrink-0 shadow-lg border border-[#c5a059]/40 hover:border-[#c5a059] hover:shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all duration-300 transform hover:scale-[1.03] cursor-pointer"
-            title={lang === "zh" ? "打开安全授权中控终端" : "Open Secure Console"}
+            title={T("打开安全授权中控终端", "Open Secure Console")}
           >
             <div className="absolute inset-0 opacity-15 bg-gradient-to-tr from-[#c5a059] to-transparent"></div>
             {/* Elegant vector icon representing layered secure supply nodes */}
@@ -923,9 +968,9 @@ export default function App() {
                 }
               }, 100);
             }}
-            className="bg-[#003580] text-white text-[11px] md:text-xs font-bold px-3 py-1.5 hover:bg-opacity-90 transition rounded-sm flex items-center shadow-sm cursor-pointer"
+            className="bg-[#003580] text-white text-xs md:text-sm lg:text-base font-black px-5 py-2.5 md:px-6 md:py-3 hover:bg-opacity-95 hover:scale-105 active:scale-[0.98] transition-all duration-250 rounded-sm flex items-center shadow-md cursor-pointer"
           >
-            {lang === "zh" ? "立即联系" : lang === "es" ? "Contactar" : lang === "ru" ? "Связаться" : "Contact Us"}
+            {T("立即联系", "Contact Us", "Contactar", "Связаться")}
           </button>
         </div>
       </nav>
@@ -970,18 +1015,97 @@ export default function App() {
         <header id="corp-hero" className="relative flex-shrink-0 bg-slate-950 text-white py-16 md:py-24 px-4 md:px-12 overflow-hidden border-b-4 border-[#c5a059]">
           {/* Background image layer matching the exact container port aesthetic */}
           <div className="absolute inset-0 z-0">
-            <img 
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes laserSweep {
+                0% { top: 0%; opacity: 0; }
+                10% { opacity: 0.4; }
+                90% { opacity: 0.4; }
+                100% { top: 100%; opacity: 0; }
+              }
+              @keyframes spinSlow {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+              }
+            `}} />
+            <motion.img 
               src={cargoShipHero} 
               alt="SinoSource cargo container ship docked at port" 
               className="w-full h-full object-cover object-center"
               referrerPolicy="no-referrer"
+              animate={{
+                scale: [1, 1.07, 1],
+              }}
+              transition={{
+                duration: 25,
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
             />
+            
+            {/* Elegant premium dynamic tech glow overlay: scanner scanlines */}
+            <div 
+              className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#c5a059]/40 to-transparent top-0 opacity-40 select-none pointer-events-none" 
+              style={{ animation: 'laserSweep 10s infinite linear' }} 
+            />
+
+            {/* Slow floating high-end ambient gold particle field */}
+            <div className="absolute inset-0 overflow-hidden mix-blend-screen opacity-50 pointer-events-none">
+              <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#c5a059">
+                  <circle cx="12%" cy="25%" r="1.8">
+                    <animate attributeName="cy" values="25%;15%;25%" dur="20s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.15;0.7;0.15" dur="20s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="38%" cy="70%" r="1.5">
+                    <animate attributeName="cy" values="70%;58%;70%" dur="24s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.1;0.6;0.1" dur="24s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="58%" cy="32%" r="2.2">
+                    <animate attributeName="cy" values="32%;48%;32%" dur="28s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.2;0.8;0.2" dur="28s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="76%" cy="48%" r="1.8">
+                    <animate attributeName="cy" values="48%;35%;48%" dur="22s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.15;0.75;0.15" dur="22s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="92%" cy="78%" r="2.8">
+                    <animate attributeName="cy" values="78%;88%;78%" dur="32s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.1;0.5;0.1" dur="32s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+                <g fill="#3b82f6">
+                  <circle cx="22%" cy="65%" r="2.5">
+                    <animate attributeName="cy" values="65%;75%;65%" dur="27s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.1;0.55;0.1" dur="27s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="68%" cy="18%" r="1.8">
+                    <animate attributeName="cy" values="18%;28%;18%" dur="23s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.15;0.65;0.15" dur="23s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="82%" cy="42%" r="2.2">
+                    <animate attributeName="cy" values="42%;32%;42%" dur="21s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.18;0.72;0.18" dur="21s" repeatCount="indefinite" />
+                  </circle>
+                </g>
+              </svg>
+            </div>
+
+            {/* Ambient slow rotating navigational compass HUD grid in the corner */}
+            <div 
+              className="absolute right-[-100px] top-[-50px] w-[500px] h-[500px] rounded-full border border-dashed border-[#c5a059]/10 select-none pointer-events-none origin-center" 
+              style={{ animation: 'spinSlow 120s infinite linear' }}
+            >
+              <div className="absolute inset-10 rounded-full border border-double border-white/5" />
+              <div className="absolute inset-28 rounded-full border border-[#3b82f6]/5" />
+              <div className="absolute inset-44 rounded-full border border-dashed border-[#c5a059]/5" />
+            </div>
+
             {/* Dark deep-blue overlay to seamlessly preserve text readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-900/70 to-[#001c44]/60"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-[#001c44]/70"></div>
           </div>
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl z-0"></div>
           
-          <div className="relative max-w-5xl mx-auto z-10 font-sans">
+          <div className="relative max-w-7xl ml-0 mr-auto pl-4 sm:pl-8 md:pl-16 lg:pl-20 z-10 font-sans">
             <div className="flex items-center space-x-3 mb-5">
               <span className="h-[2px] w-10 bg-[#c5a059]"></span>
               <span className="text-[#c5a059] uppercase tracking-[0.3em] text-[11px] md:text-sm font-black">
@@ -989,7 +1113,7 @@ export default function App() {
               </span>
             </div>
             
-            <h1 id="hero-heading" className="text-3xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-black tracking-tight mb-6 leading-[1.1] uppercase">
+            <h1 id="hero-heading" className="text-5xl sm:text-7xl md:text-8xl lg:text-[6rem] xl:text-[7rem] font-black tracking-tighter mb-6 leading-[1.0] uppercase">
               <span className="text-white">{t[lang].heroHeadingPrefix} </span>
               <span className="text-[#c5a059]">{t[lang].heroHeadingSuf}</span>
             </h1>
@@ -1007,44 +1131,44 @@ export default function App() {
                     element.scrollIntoView({ behavior: "smooth", block: "start" });
                   }
                 }}
-                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 px-4.5 py-2.5 font-black rounded-sm text-xs md:text-sm flex items-center space-x-2 shadow-xl transition duration-300 transform hover:scale-[1.01] cursor-pointer"
+                className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 px-6 py-3.5 md:px-10 md:py-5 font-black rounded-sm text-sm md:text-base lg:text-lg flex items-center space-x-3 shadow-2xl transition duration-300 transform hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
               >
-                <Phone className="w-4.5 h-4.5 text-slate-950" />
-                <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
-                <ArrowRight className="w-4 h-4 text-slate-950 ml-1" />
+                <Phone className="w-5 h-5 md:w-6 md:h-6 text-slate-950" />
+                <span>{T("与我们建立联系 / 提交采购规格", "Contact Our Experts / Register RFP Specs")}</span>
+                <ArrowRight className="w-4.5 h-4.5 md:w-5.5 md:h-5.5 text-slate-950 ml-1" />
               </button>
 
               {/* Shrunken, secondary, compact tools row */}
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                <span className="text-[9px] text-slate-400 mr-2 uppercase tracking-widest font-mono font-bold">
-                  {lang === "zh" ? "智能分析终端工具车：" : "Core Engines Console:"}
+              <div className="flex flex-wrap items-center gap-3 pt-12 md:pt-20 border-t border-white/10 mt-8">
+                <span className="text-[11px] md:text-sm text-slate-400 mr-2 uppercase tracking-widest font-mono font-bold">
+                  {T("智能分析终端工具车：", "Core Engines Console:")}
                 </span>
                 
                 <button 
                   onClick={() => setActiveTab("planner")}
-                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
-                  title={lang === "zh" ? "生成AI采购企划" : "Launch AI planner"}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/60 px-4 py-2 rounded-sm text-xs md:text-sm font-bold transition flex items-center space-x-2"
+                  title={T("生成AI采购企划", "Launch AI planner")}
                 >
-                  <Sparkles className="w-3 h-3 text-[#c5a059]" />
-                  <span>{lang === "zh" ? "AI 采购企划" : "AI Planner"}</span>
+                  <Sparkles className="w-4 h-4 text-[#c5a059]" />
+                  <span>{T("AI 采购企划", "AI Planner")}</span>
                 </button>
                 
                 <button 
                   onClick={() => setActiveTab("clusters")}
-                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
-                  title={lang === "zh" ? "核心产业带集群图" : "View clusters"}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/60 px-4 py-2 rounded-sm text-xs md:text-sm font-bold transition flex items-center space-x-2"
+                  title={T("核心产业带集群图", "View clusters")}
                 >
-                  <Globe className="w-3 h-3 text-[#c5a059]" />
-                  <span>{lang === "zh" ? "核心产业带图" : "Industrial Clusters"}</span>
+                  <Globe className="w-4 h-4 text-[#c5a059]" />
+                  <span>{T("核心产业带图", "Industrial Clusters")}</span>
                 </button>
 
                 <button 
                   onClick={() => setActiveTab("aql")}
-                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/40 px-2.5 py-1 rounded-sm text-[10px] font-bold transition flex items-center space-x-1"
-                  title={lang === "zh" ? "自动计算抽检数" : "AQL standards calculation"}
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-[#c5a059]/60 px-4 py-2 rounded-sm text-xs md:text-sm font-bold transition flex items-center space-x-2"
+                  title={T("自动计算抽检数", "AQL standards calculation")}
                 >
-                  <Calculator className="w-3 h-3 text-[#c5a059]" />
-                  <span>{lang === "zh" ? "自动计算抽检数" : "AQL Calculator"}</span>
+                  <Calculator className="w-4 h-4 text-[#c5a059]" />
+                  <span>{T("自动计算抽检数", "AQL Calculator")}</span>
                 </button>
               </div>
             </div>
@@ -1067,78 +1191,75 @@ export default function App() {
                 <div className="relative z-10 space-y-6">
                   <div>
                     <span className="text-xs font-black text-[#c5a059] tracking-widest uppercase block mb-1">
-                      {lang === "zh" ? "核心服务特色" : "ENTERPRISE CAPABILITIES"}
+                      {T("核心服务特色", "ENTERPRISE CAPABILITIES")}
                     </span>
                     <h2 className="text-2xl md:text-3xl font-black text-[#003580] leading-snug">
-                      {lang === "zh" ? "穿透各环节的跨境采购代理标准" : "Bridging International Demands with High-Density Chinese Industrial Hubs"}
+                      {T("穿透各环节的跨境采购代理标准", "Bridging International Demands with High-Density Chinese Industrial Hubs")}
                     </h2>
                   </div>
 
                   {/* Highlighted prominent quote with gorgeous styling for maximal noticeability and top aesthetics */}
                   <div className="bg-gradient-to-r from-[#fefbf6] to-[#fbf7ee] border-l-4 border-[#c5a059] p-6 rounded-r-md my-6 shadow-sm">
                     <p className="text-amber-950 font-black text-sm md:text-base leading-relaxed">
-                      {lang === "zh" ? (
-                        <>
-                          “我们独立于任何生产工厂，代表<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">唯一的买方利益</span>。通过严格将每个工厂流程量化、精细追踪，为您在模具校调、出厂终检等<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">物理点实施闭环管控</span>，消除供应链盲区。”
-                        </>
-                      ) : (
-                        <>
-                          “We operate strictly independent of any manufacturing facility, representing <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">your buyer interests alone</span>. By quantifying and tracking each dynamic metric on the floor, we deliver watertight physical closure on mold calibration and pre-shipment sampling, completely <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">eliminating supply chain blind spots</span>.”
-                        </>
+                      {T(
+                        <>“我们独立于任何生产工厂，代表<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">唯一的买方利益</span>。通过严格将每个工厂流程量化、精细追踪，为您在模具校调、出厂终检等<span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">物理点实施闭环管控</span>，消除供应链盲区。”</>,
+                        <>“We operate strictly independent of any manufacturing facility, representing <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">your buyer interests alone</span>. By quantifying and tracking each dynamic metric on the floor, we deliver watertight physical closure on mold calibration and pre-shipment sampling, completely <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">eliminating supply chain blind spots</span>.”</>,
+                        <>“Operamos independientemente de cualquier planta de fabricación, representando <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">únicamente sus intereses como comprador</span>. Al realizar un seguimiento riguroso de cada proceso y métrica en planta, implementamos un control de circuito cerrado en puntos físicos críticos como la calibración de moldes y la inspección final, <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">eliminando puntos ciegos</span>.”</>,
+                        <>“Мы действуем независимо от заводов-производителей, представляя <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">исключительно ваши интересы как покупателя</span>. Благодаря строгому отслеживанию каждого процесса непосредственно в цехах, мы реализуем замкнутый контроль в таких критических точках, как настройка пресс-форм и проверка качества перед отгрузкой, <span className="text-[#003580] font-black underline decoration-4 decoration-[#c5a059]/40">устраняя любые слепые зоны</span>.”</>
                       )}
                     </p>
                     <div className="text-[10px] text-[#c5a059] uppercase tracking-widest font-mono font-bold mt-3">
-                      {lang === "zh" ? "★ 双检质检长行政指令保证" : "★ DUAL-POINT QUALITY OVERSIGHT PROTOCOL"}
+                      {T("★ 双检质检长行政指令保证", "★ DUAL-POINT QUALITY OVERSIGHT PROTOCOL")}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-700">
                     <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
-                      <span>{lang === "zh" ? "双重开箱检测：工序中段+出货前" : "Dual-Point Quality Control Inspections"}</span>
+                      <span>{T("双重开箱检测：工序中段+出货前", "Dual-Point Quality Control Inspections")}</span>
                     </div>
                     <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
-                      <span>{lang === "zh" ? "合规审查：重金属、无双酚A、CE安全认证" : "Chemical Certifications & Compliance Audit"}</span>
+                      <span>{T("合规审查：重金属、无双酚A、CE安全认证", "Chemical Certifications & Compliance Audit")}</span>
                     </div>
                     <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
-                      <span>{lang === "zh" ? "自有海关集拼货位，无惧排队旺季" : "Dedicated Bonded Consolidation Storage"}</span>
+                      <span>{T("自有海关集拼货位，无惧排队旺季", "Dedicated Bonded Consolidation Storage")}</span>
                     </div>
                     <div className="flex items-center space-x-2.5 p-2.5 bg-slate-50 border-l-4 border-[#003580]">
                       <CheckCircle2 className="w-4 h-4 text-[#003580]" />
-                      <span>{lang === "zh" ? "多国语言商务经理与工程师现场同频" : "Native-Speaking Business Liaison & Engineers"}</span>
+                      <span>{T("多国语言商务经理与工程师现场同频", "Native-Speaking Business Liaison & Engineers")}</span>
                     </div>
                   </div>
 
                   {/* Refined Optimised 4-step Procurement Flow / Stepper - "更精炼更显眼的表述" */}
                   <div className="border-t border-slate-100 pt-6 mt-6">
                     <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase block mb-3.5 font-mono">
-                      {lang === "zh" ? "华源物理品控闭环流程 (精炼执行)" : "SINOSOURCE SECURED PHYSICAL SOURCING ECOSYSTEM"}
+                      {T("华源物理品控闭环流程 (精炼执行)", "SINOSOURCE SECURED PHYSICAL SOURCING ECOSYSTEM")}
                     </span>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                       <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
                         <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 01.</div>
-                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "校模开模" : "Tooling Check"}</h4>
-                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "首样公差极致锁定在 ±0.03mm 内，排除渗漏风险" : "Strictly anchoring tooling tolerances within ±0.03mm limits"}</p>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{T("校模开模", "Tooling Check")}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{T("首样公差极致锁定在 ±0.03mm 内，排除渗漏风险", "Strictly anchoring tooling tolerances within ±0.03mm limits")}</p>
                       </div>
                       
                       <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
                         <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 02.</div>
-                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "量化巡检" : "Dynamic Audit"}</h4>
-                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "在制程中巡回抽验检测硬度公差、材料应变力" : "Dynamic floor audits securing hardness, wall-density and raw elements"}</p>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{T("量化巡检", "Dynamic Audit")}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{T("在制程中巡回抽验检测硬度公差、材料应变力", "Dynamic floor audits securing hardness, wall-density and raw elements")}</p>
                       </div>
 
                       <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
                         <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 03.</div>
-                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "AQLII终检" : "AQL-II Sealing"}</h4>
-                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "依照国际 ISO 2859-1 表格，多重性能破坏性测试" : "statistical extraction & destructive physical tests on batch completion"}</p>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{T("AQLII终检", "AQL-II Sealing")}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{T("依照国际 ISO 2859-1 表格，多重性能破坏性测试", "statistical extraction & destructive physical tests on batch completion")}</p>
                       </div>
 
                       <div className="bg-slate-50 hover:bg-slate-100/70 border border-slate-150 p-3 h-full rounded-sm hover:border-[#c5a059]/40 transition duration-150 group">
                         <div className="text-[10px] font-mono font-black text-[#c5a059] mb-1">STAGE 04.</div>
-                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{lang === "zh" ? "完税交付" : "DDP Lock-In"}</h4>
-                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{lang === "zh" ? "全程DDP一口价包税多模联运，海外库房直达" : "Cleared complete DDP customs and door delivered to client warehouse"}</p>
+                        <h4 className="text-xs font-black text-[#003580] group-hover:text-[#c5a059] transition">{T("完税交付", "DDP Lock-In")}</h4>
+                        <p className="text-[10px] text-slate-500 leading-snug mt-1">{T("全程DDP一口价包税多模联运，海外库房直达", "Cleared complete DDP customs and door delivered to client warehouse")}</p>
                       </div>
                     </div>
                   </div>
@@ -1154,12 +1275,10 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="text-xs font-black text-[#c5a059] uppercase tracking-wider">
-                      {lang === "zh" ? "AI 供应链模拟" : "AI Simulation"}
+                      {T("AI 供应链模拟", "AI Simulation")}
                     </h3>
                     <p className="text-[10.5px] text-slate-300 leading-snug mt-1">
-                      {lang === "zh" ? 
-                        "在线测算产业地分布及生产流程周期，物理核查出货缺陷。" : 
-                        "Instantly calculate manufacturing nodes & model dynamic defect frequencies."
+                      {T("在线测算产业地分布及生产流程周期，物理核查出货缺陷。", "Instantly calculate manufacturing nodes & model dynamic defect frequencies.")
                       }
                     </p>
                   </div>
@@ -1179,7 +1298,7 @@ export default function App() {
                     onClick={() => setActiveTab("planner")}
                     className="w-full border border-white/20 hover:bg-white/10 py-1 font-bold rounded-sm text-[10px] transition block text-center cursor-pointer text-slate-300"
                   >
-                    {lang === "zh" ? "进入专属企划面板" : "Launch Planner →"}
+                    {T("进入专属企划面板", "Launch Planner →")}
                   </button>
                 </div>
               </div>
@@ -1190,15 +1309,13 @@ export default function App() {
               <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-[#c5a059] opacity-5 rounded-full filter blur-3xl pointer-events-none"></div>
               <div className="space-y-2 relative z-10 md:max-w-2xl">
                 <span className="text-[10px] font-mono font-black text-[#c5a059] tracking-widest uppercase bg-white/10 px-2.5 py-1 rounded-sm">
-                  {lang === "zh" ? "华源环球专享商洽渠道" : "SINOSOURCE EXCLUSIVE ENTERPRISE CHANNEL"}
+                  {T("华源环球专享商洽渠道", "SINOSOURCE EXCLUSIVE ENTERPRISE CHANNEL")}
                 </span>
                 <h3 className="text-xl md:text-2xl font-black text-white leading-tight uppercase">
-                  {lang === "zh" ? "准备好启动您的高端合规采购与严苛物理品控吗？" : "Ready to Safeguard Your Freight with Rigorous Inspections?"}
+                  {T("准备好启动您的高端合规采购与严苛物理品控吗？", "Ready to Safeguard Your Freight with Rigorous Inspections?")}
                 </h3>
                 <p className="text-slate-300 text-xs leading-relaxed max-w-xl">
-                  {lang === "zh" ? 
-                    "多国语品控团队及商务长已全线驻点产业带派单。点击下方按钮即可前往规格登记处，对接收集首期物料排产与价格物理评估。" : 
-                    "Connect directly with physical audit managers nested within raw materials and industrial centers. Secure pristine AQL results from day one."
+                  {T("多国语品控团队及商务长已全线驻点产业带派单。点击下方按钮即可前往规格登记处，对接收集首期物料排产与价格物理评估。", "Connect directly with physical audit managers nested within raw materials and industrial centers. Secure pristine AQL results from day one.")
                   }
                 </p>
               </div>
@@ -1212,7 +1329,7 @@ export default function App() {
                 className="bg-[#c5a059] hover:bg-yellow-500 text-slate-950 font-black px-5 py-2.5 rounded-sm text-xs md:text-sm uppercase tracking-wider transition-all duration-300 shadow-md shrink-0 transform hover:scale-[1.01] cursor-pointer flex items-center space-x-2"
               >
                 <Phone className="w-4 h-4 text-slate-950 animate-pulse" />
-                <span>{lang === "zh" ? "与我们建立联系 / 提交采购规格" : "Contact Our Experts / Register RFP Specs"}</span>
+                <span>{T("与我们建立联系 / 提交采购规格", "Contact Our Experts / Register RFP Specs")}</span>
                 <ArrowRight className="w-4 h-4 text-slate-950" />
               </button>
             </div>
@@ -1221,10 +1338,10 @@ export default function App() {
             <div id="shrunken-modules-panel" className="bg-white border border-slate-200 rounded-sm p-4 text-left space-y-3 shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
-                  {lang === "zh" ? "核心智能引擎快进终端 (已精测压缩)" : "CORE MOTORS CONSOLIDATED TERMINAL (COMPACTED)"}
+                  {T("核心智能引擎快进终端 (已精测压缩)", "CORE MOTORS CONSOLIDATED TERMINAL (COMPACTED)")}
                 </span>
                 <span className="text-[10px] text-slate-400">
-                  {lang === "zh" ? "点击切换专用作业面板" : "Switch workspace tab below"}
+                  {T("点击切换专用作业面板", "Switch workspace tab below")}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -1240,10 +1357,10 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
-                        {lang === "zh" ? "A. AI采购企划" : "A. AI Sourcing Planner"}
+                        {T("A. AI采购企划", "A. AI Sourcing Planner")}
                       </h4>
                       <p className="text-[10px] text-slate-500 leading-none mt-1">
-                        {lang === "zh" ? "在线评估材料、量化出厂参数" : "Gemini AI-powered specs drafting"}
+                        {T("在线评估材料、量化出厂参数", "Gemini AI-powered specs drafting")}
                       </p>
                     </div>
                   </div>
@@ -1261,10 +1378,10 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
-                        {lang === "zh" ? "B. 核心产业带图" : "B. Industrial Clusters"}
+                        {T("B. 核心产业带图", "B. Industrial Clusters")}
                       </h4>
                       <p className="text-[10px] text-slate-500 leading-none mt-1">
-                        {lang === "zh" ? "打通各区域厂矿及港口配给" : "Ex-factory geographical analysis"}
+                        {T("打通各区域厂矿及港口配给", "Ex-factory geographical analysis")}
                       </p>
                     </div>
                   </div>
@@ -1282,10 +1399,10 @@ export default function App() {
                     </div>
                     <div>
                       <h4 className="text-xs font-black text-slate-955 group-hover:text-[#003580] transition mt-0.5">
-                        {lang === "zh" ? "C. 自动计算抽检数" : "C. AQL Calculator"}
+                        {T("C. 自动计算抽检数", "C. AQL Calculator")}
                       </h4>
                       <p className="text-[10px] text-slate-500 leading-none mt-1">
-                        {lang === "zh" ? "ISO AQLII工业级批量数算程序" : "Calculate batch sizes mathematically"}
+                        {T("ISO AQLII工业级批量数算程序", "Calculate batch sizes mathematically")}
                       </p>
                     </div>
                   </div>
@@ -1303,15 +1420,13 @@ export default function App() {
                 
                 <div>
                   <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
-                    {lang === "zh" ? "采购需求就地登记" : "INQUIRY SUBMISSION PORTAL"}
+                    {T("采购需求就地登记", "INQUIRY SUBMISSION PORTAL")}
                   </span>
                   <h3 className="text-2xl font-black text-[#003580] tracking-tight mt-1">
-                    {lang === "zh" ? "提交您的采购及品控规格要求" : "Register Sourcing Specs & Requirements"}
+                    {T("提交您的采购及品控规格要求", "Register Sourcing Specs & Requirements")}
                   </h3>
                   <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                    {lang === "zh" 
-                      ? "请在下方填写您的联系方式与具体的采购要求，提交后系统将联同供应商库和质检工程师排挡。点击页面顶端金底‘S’ Logo，可以唤醒专商通道监控后台并解密实时排期进度。" 
-                      : "Input your specifications to deploy immediate supplier matchmaking. Click the golden 'S' logo at the top of the page to launch the secure console."}
+                    {T("请在下方填写您的联系方式与具体的采购要求，提交后系统将联同供应商库和质检工程师排挡。点击页面顶端金底‘S’ Logo，可以唤醒专商通道监控后台并解密实时排期进度。", "Input your specifications to deploy immediate supplier matchmaking. Click the golden 'S' logo at the top of the page to launch the secure console.")}
                   </p>
                 </div>
 
@@ -1320,11 +1435,9 @@ export default function App() {
                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-800 text-xs flex items-start space-x-3">
                        <Check className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                        <div>
-                         <p className="font-bold">{lang === "zh" ? "需求就地登记成功！" : "Inquiry Registered Successfully!"}</p>
+                         <p className="font-bold">{T("需求就地登记成功！", "Inquiry Registered Successfully!")}</p>
                          <p className="text-slate-600 mt-1 leading-relaxed">
-                           {lang === "zh" 
-                             ? "您的产品工艺细节与品控指标已存证加密建档。点击页面最顶端的金底“S” Logo，即可输入密码解锁您的完整进度档案，并进行系统性统一管理。" 
-                             : "Your specifications are safely encrypted. Click the golden \"S\" logo at the top of the viewport to inspect and systematically manage."}
+                           {T("您的产品工艺细节与品控指标已存证加密建档。点击页面最顶端的金底“S” Logo，即可输入密码解锁您的完整进度档案，并进行系统性统一管理。", "Your specifications are safely encrypted. Click the golden 'S' logo at the top of the viewport to inspect and systematically manage.")}
                          </p>
                        </div>
                      </div>
@@ -1339,12 +1452,12 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "公司/联络人姓名" : "Company / Contact Name"} <span className="text-red-500">*</span>
+                        {T("公司/联络人姓名", "Company / Contact Name")} <span className="text-red-500">*</span>
                       </label>
                       <input 
                         type="text" 
                         required
-                        placeholder={lang === "zh" ? "例如：Alpha海外零售采购部 李经理" : "e.g., Jane Done, Alpha Retail Inc"}
+                        placeholder={T("例如：Alpha海外零售采购部 李经理", "e.g., Jane Done, Alpha Retail Inc")}
                         value={inquiryName} 
                         onChange={(e) => setInquiryName(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1353,12 +1466,12 @@ export default function App() {
 
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "联络号码 (WhatsApp/手机)" : "WhatsApp / Tel Number"} <span className="text-red-500">*</span>
+                        {T("联络号码 (WhatsApp/手机)", "WhatsApp / Tel Number")} <span className="text-red-500">*</span>
                       </label>
                       <input 
                         type="text" 
                         required
-                        placeholder={lang === "zh" ? "例如：+86 15618073092" : "e.g., +1 (650) 555-0123"}
+                        placeholder={T("例如：+86 15618073092", "e.g., +1 (650) 555-0123")}
                         value={inquiryContact} 
                         onChange={(e) => setInquiryContact(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1369,7 +1482,7 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "谷歌官方邮箱" : "Google / Business Email"} <span className="text-red-500">*</span>
+                        {T("谷歌官方邮箱", "Google / Business Email")} <span className="text-red-500">*</span>
                       </label>
                       <input 
                         type="email" 
@@ -1383,7 +1496,7 @@ export default function App() {
 
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "国际贸易条款偏好" : "Preferred Incoterms"}
+                        {T("国际贸易条款偏好", "Preferred Incoterms")}
                       </label>
                       <select 
                         value={inquiryIncoterms} 
@@ -1401,12 +1514,12 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "拟采购产品大类" : "Target Product Description"} <span className="text-red-500">*</span>
+                        {T("拟采购产品大类", "Target Product Description")} <span className="text-red-500">*</span>
                       </label>
                       <input 
                         type="text" 
                         required
-                        placeholder={lang === "zh" ? "例如：双层不锈钢超轻保温杯" : "e.g., Stainless Steel Vacuum Flask"}
+                        placeholder={T("例如：双层不锈钢超轻保温杯", "e.g., Stainless Steel Vacuum Flask")}
                         value={inquiryProduct} 
                         onChange={(e) => setInquiryProduct(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1415,11 +1528,11 @@ export default function App() {
 
                     <div className="space-y-1">
                       <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                        {lang === "zh" ? "预计单次或年采购规模（例如：5000只）" : "Estimated Target Quantity"}
+                        {T("预计单次 or 年采购规模（例如：5000只）", "Estimated Target Quantity")}
                       </label>
                       <input 
                         type="text" 
-                        placeholder={lang === "zh" ? "例如：5,000 Pcs" : "e.g., 5,000 Pcs / Shipment"}
+                        placeholder={T("例如：5,000 Pcs", "e.g., 5,000 Pcs / Shipment")}
                         value={inquiryQty} 
                         onChange={(e) => setInquiryQty(e.target.value)}
                         className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none"
@@ -1429,11 +1542,11 @@ export default function App() {
 
                   <div className="space-y-1">
                     <label className="text-xs font-extrabold text-[#003580] uppercase tracking-wider block">
-                      {lang === "zh" ? "具体的材质要求、工艺指标、或 AQL 特殊品控阈值" : "Product Specifications & AQL Quality Directives"}
+                      {T("具体的材质要求、工艺指标、或 AQL 特殊品控阈值", "Product Specifications & AQL Quality Directives")}
                     </label>
                     <textarea 
                       rows={3}
-                      placeholder={lang === "zh" ? "请用中文、英文或您的国家母语，描述您期望的材质、颜色、是否需要印制 Logo、以及是否需要强制认证等多维工艺核实基准..." : "State preferred metal alloy, color codes, logo stamping, FDA/CE paper safety metrics, or normal limits to inspect..."}
+                      placeholder={T("请用中文、英文或您的国家母语，描述您期望的材质、颜色、是否需要印制 Logo、以及是否需要强制认证等多维工艺核实基准...", "State preferred metal alloy, color codes, logo stamping, FDA/CE paper safety metrics, or normal limits to inspect...")}
                       value={inquirySpecs} 
                       onChange={(e) => setInquirySpecs(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs p-3 rounded-sm focus:border-[#003580] focus:ring-1 focus:ring-[#003580] outline-none resize-none font-sans"
@@ -1446,11 +1559,11 @@ export default function App() {
                     className="w-full bg-[#003580] text-white py-3 font-semibold rounded-sm hover:bg-opacity-90 transition text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow cursor-pointer"
                   >
                     {isSubmittingInquiry ? (
-                       <span>{lang === "zh" ? "海口系统安全校验申报中..." : "Transmitting specifications to secure cluster..."}</span>
+                       <span>{T("海口系统安全校验申报中...", "Transmitting specifications to secure cluster...")}</span>
                     ) : (
                        <>
                          <Send className="w-4 h-4 text-[#c5a059]" />
-                         <span>{lang === "zh" ? "立即向华源全球供应链中心建立采购线案" : "Establish Formal Sourcing Dispatch & Audits"}</span>
+                         <span>{T("立即向华源全球供应链中心建立采购线案", "Establish Formal Sourcing Dispatch & Audits")}</span>
                        </>
                     )}
                   </button>
@@ -1475,29 +1588,27 @@ export default function App() {
                   <div className="space-y-1.5 flex-1 select-text">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                       <h4 className="text-sm font-black text-emerald-950 flex items-center space-x-1.5">
-                        <span>📬 {lang === "zh" ? "华源全球业务中心：已收悉您的采购需求线索 AQL 建议档案！" : "📬 SinoSource Global Hub: Sourcing Inquiry Decrypted!"}</span>
+                        <span>📬 {T("华源全球业务中心：已收悉您的采购需求线索 AQL 建议档案！", "📬 SinoSource Global Hub: Sourcing Inquiry Decrypted!")}</span>
                       </h4>
                       <span className="text-[10px] bg-emerald-100 text-emerald-800 font-mono font-bold px-2 py-0.5 rounded uppercase self-start">
-                        {lang === "zh" ? "系统提示：线索已建档，您也可以直接联系" : "Status: Received"}
+                        {T("系统提示：线索已建档，您也可以直接联系", "Status: Received")}
                       </span>
                     </div>
                     <p className="text-xs text-slate-700 leading-relaxed font-semibold">
-                      {lang === "zh" ? 
-                        "我们已成功将您的物料工艺细节与品控指标存证加密，并在中控台上完成物理投射编档。为了在最快的时间内对您的物料需求（如不锈钢保温杯、冷深冲工艺等）启动 AQLII 首样排期，请立即点击下方任一绿色或蓝色官方通道，直接建立 1 对 1 商务沟通与顾问式对接！" : 
-                        "We have received and logged your sourcing specifications! Sourcing parameters are safely stored. To initiate custom product line tooling and mold tolerances checks, contact us directly via any of the direct lines listed below!"
+                      {T("我们已成功将您的物料工艺细节与品控指标存证加密，并在中控台上完成物理投射编档。为了在最快的时间内对您的物料需求（如不锈钢保温杯、冷深冲工艺等）启动 AQLII 首样排期，请立即点击下方任一绿色或蓝色官方通道，直接建立 1 对 1 商务沟通与顾问式对接！", "We have received and logged your sourcing specifications! Sourcing parameters are safely stored. To initiate custom product line tooling and mold tolerances checks, contact us directly via any of the direct lines listed below!")
                       }
                     </p>
                     <div className="pt-1.5 flex items-center space-x-2">
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
                       <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider font-mono">
-                        {lang === "zh" ? "系统状态：推荐直接呼叫或添加 WhatsApp" : "System recommendation: Chat via WhatsApp or Call below"}
+                        {T("系统状态：推荐直接呼叫或添加 WhatsApp", "System recommendation: Chat via WhatsApp or Call below")}
                       </span>
                     </div>
                   </div>
                   <button 
                     onClick={() => setShowInquiryNotice(false)} 
                     className="text-slate-400 hover:text-slate-600 transition text-xs font-bold p-1 shrink-0 self-start cursor-pointer"
-                    title={lang === "zh" ? "关闭提示" : "Dismiss"}
+                    title={T("关闭提示", "Dismiss")}
                   >
                     ✕
                   </button>
@@ -1507,14 +1618,14 @@ export default function App() {
               <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-4">
                 <div>
                   <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
-                    {lang === "zh" ? "官方商专渠道门接" : "OFFICIAL CORPORATE DESK"}
+                    {T("官方商专渠道门接", "OFFICIAL CORPORATE DESK")}
                   </span>
                   <h3 className="text-2xl font-black text-[#003580] tracking-tight mt-1">
-                    {lang === "zh" ? "华源环球采购商务联络中心" : "SinoSource Corporate Liaison Center"}
+                    {T("华源环球采购商务联络中心", "SinoSource Corporate Liaison Center")}
                   </h3>
                 </div>
                 <div className="text-xs text-slate-500 max-w-sm">
-                  {lang === "zh" ? "欢迎全球采购伙伴直接连通。资深品控总监将在48小时内就材料采购可行性给予首期物理核实意见。" : "Connect directly with our primary regional desks. Our senior quality managers will follow up on potential manufacturing lines."}
+                  {T("欢迎全球采购伙伴直接连通。资深品控总监将在48小时内就材料采购可行性给予首期物理核实意见。", "Connect directly with our primary regional desks. Our senior quality managers will follow up on potential manufacturing lines.")}
                 </div>
               </div>
 
@@ -1533,11 +1644,64 @@ export default function App() {
                   <div className="min-w-0 flex-1">
                     <span className="text-[9px] uppercase font-black tracking-wider text-emerald-600 block leading-tight">WhatsApp Support</span>
                     <span className="text-xs font-black text-slate-900 block group-hover:text-emerald-700 transition leading-snug truncate">+86 156 1807 3092</span>
-                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "点击立即发起会话 (在线)" : "Click to chat directly (Online)"}</span>
+                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{T("点击立即发起会话 (在线)", "Click to chat directly (Online)")}</span>
                   </div>
                 </a>
 
-                {/* PHONE */}
+                {/* GOOGLE MAIL (SWAPPED TO SECOND POSITION & UPGRADED TO INTEGRATED COPY ENGINE) */}
+                <button 
+                  onClick={handleCopyEmail}
+                  type="button"
+                  className={`group p-3.5 border rounded-sm hover:shadow-sm transition-all duration-300 flex items-center space-x-3 cursor-pointer text-left w-full relative ${
+                    emailCopied 
+                      ? "bg-emerald-50 border-emerald-400/80 shadow-inner" 
+                      : "bg-amber-50/50 hover:bg-amber-50 border-amber-200/50 hover:border-amber-400"
+                  }`}
+                  title={T("点击复制官方邮箱", "Click to copy official email")}
+                >
+                  {/* Floating Speech Bubble Alert - Renders outside the button limits */}
+                  {emailCopied && (
+                    <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-[#001533] border-3 border-emerald-400 text-white text-sm md:text-base font-black py-4 px-6 md:px-8 rounded-sm shadow-2xl z-55 flex items-center space-x-3.5 animate-bounce whitespace-nowrap">
+                      <Check className="w-5.5 h-5.5 text-emerald-400 stroke-[4.5]" />
+                      <span className="font-sans text-white tracking-widest text-shadow">
+                        {T("已复制邮箱请前往发送邮件", "EMAIL COPIED! PLEASE GO AND SEND NOW")}
+                      </span>
+                      {/* Triangle Pointer pointing down with matching borders */}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-2 w-4 h-4 bg-[#001533] border-r-3 border-b-3 border-emerald-400 rotate-45 pointer-events-none"></div>
+                    </div>
+                  )}
+
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                    emailCopied ? "bg-emerald-600 scale-105" : "bg-[#c5a059]"
+                  }`}>
+                    {emailCopied ? (
+                      <Check className="w-4 h-4 text-white" />
+                    ) : (
+                      <Mail className="w-4 h-4 text-slate-950" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className={`text-[9px] uppercase font-black tracking-wider block leading-tight transition-colors duration-300 ${
+                      emailCopied ? "text-emerald-700" : "text-amber-700"
+                    }`}>
+                      {T("谷歌官方邮箱 (支持一键复制)", "Google Mail (Click to Copy)")}
+                    </span>
+                    <span className="text-xs font-black text-slate-900 block break-all transition leading-snug truncate">
+                      xuanm5951@gmail.com
+                    </span>
+                    <span className={`text-[10px] font-bold block leading-none mt-1 transition-colors duration-300 ${
+                      emailCopied ? "text-emerald-800 font-extrabold animate-pulse" : "text-amber-600"
+                    }`}>
+                      {emailCopied ? (
+                        T("已复制邮箱请前往发送邮件", "Copied! Please proceed to send email")
+                      ) : (
+                        T("⚡️ 点击复制邮箱到剪贴板", "⚡️ Click to copy to clipboard")
+                      )}
+                    </span>
+                  </div>
+                </button>
+
+                {/* PHONE (SWAPPED TO THIRD POSITION) */}
                 <a 
                   href="tel:15618073092"
                   className="group bg-blue-50/50 hover:bg-blue-50 p-3.5 border border-blue-200/50 rounded-sm hover:border-blue-400 hover:shadow-sm transition-all flex items-center space-x-3 cursor-pointer text-left"
@@ -1546,24 +1710,9 @@ export default function App() {
                     <Phone className="w-4 h-4 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase font-black tracking-wider text-[#003580] block leading-tight">{lang === "zh" ? "官方接听热线" : "Primary Phone"}</span>
+                    <span className="text-[9px] uppercase font-black tracking-wider text-[#003580] block leading-tight">{T("官方接听热线", "Primary Phone")}</span>
                     <span className="text-xs font-black text-slate-900 block group-hover:text-[#003580] transition leading-snug truncate">15618073092</span>
-                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "一键拨打・紧急跨境排期" : "Click to Call・Urgent Sourcing"}</span>
-                  </div>
-                </a>
-
-                {/* GOOGLE MAIL */}
-                <a 
-                  href="mailto:xuanm5951@gmail.com"
-                  className="group bg-amber-50/50 hover:bg-amber-50 p-3.5 border border-amber-200/50 rounded-sm hover:border-amber-400 hover:shadow-sm transition-all flex items-center space-x-3 cursor-pointer text-left"
-                >
-                  <div className="w-8 h-8 bg-[#c5a059] rounded-full flex items-center justify-center shrink-0">
-                    <Mail className="w-4 h-4 text-slate-950" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-[9px] uppercase font-black tracking-wider text-amber-700 block leading-tight">{lang === "zh" ? "谷歌官方邮箱" : "Google Inbox"}</span>
-                    <span className="text-xs font-black text-slate-900 block group-hover:text-amber-800 break-all transition leading-snug truncate">xuanm5951@gmail.com</span>
-                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{lang === "zh" ? "发送完整图势排期" : "Send spec PDFs & CAD"}</span>
+                    <span className="text-[10px] text-slate-500 block leading-none mt-0.5">{T("一键拨打・紧急跨境排期", "Click to Call・Urgent Sourcing")}</span>
                   </div>
                 </a>
 
@@ -1625,9 +1774,7 @@ export default function App() {
                 <div className="p-4 bg-slate-100 border border-slate-200 rounded-sm text-xs text-slate-500 flex items-start space-x-2.5">
                   <Info className="w-4 h-4 text-[#003580] shrink-0 mt-0.5" />
                   <p className="leading-relaxed">
-                    {lang === "zh" ? 
-                      "我们长期在以上产业带部署物理质检专员。除三大成熟产带外，另支持佛山建材家具、绍兴轻纺、中山灯具等各区域化纵深集采。" : 
-                      "SinoSource representatives live and breathe within these physical cluster zones. This close proximity ensures swift factory responses, immediate sampling oversight, and localized auditing within 4 hours."
+                    {T("我们长期在以上产业带部署物理质检专员。除三大成熟产带外，另支持佛山建材家具、绍兴轻纺、中山灯具等各区域化纵深集采。", "SinoSource representatives live and breathe within these physical cluster zones. This close proximity ensures swift factory responses, immediate sampling oversight, and localized auditing within 4 hours.")
                     }
                   </p>
                 </div>
@@ -1638,13 +1785,13 @@ export default function App() {
                 
                 <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
                   <div>
-                    <span className="text-xs font-bold text-[#c5a059] uppercase tracking-wider">{lang === "zh" ? "核心考察区域 / 当前选定" : "DENSE SUPPLY CHAIN HIGHLIGHT"}</span>
+                    <span className="text-xs font-bold text-[#c5a059] uppercase tracking-wider">{T("核心考察区域 / 当前选定", "DENSE SUPPLY CHAIN HIGHLIGHT")}</span>
                     <h3 className="text-2xl font-black text-[#003580] mt-1">{selectedCluster.city}</h3>
                   </div>
                   <div className="bg-[#f8f9fa] border border-slate-200 px-4 py-2.5 rounded-sm flex items-center space-x-3">
                     <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></div>
                     <span className="text-xs font-bold text-[#003580]">
-                      {lang === "zh" ? "SinoSource 直属中心运营中" : "SinoSource Hub Active"}
+                      {T("SinoSource 直属中心运营中", "SinoSource Hub Active")}
                     </span>
                   </div>
                 </div>
@@ -1659,7 +1806,7 @@ export default function App() {
                   </div>
 
                   <div>
-                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">{lang === "zh" ? "产业集群背景与资源密度" : "Industrial Context & Supplier Density"}</h5>
+                    <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">{T("产业集群背景与资源密度", "Industrial Context & Supplier Density")}</h5>
                     <p className="text-slate-600 text-sm leading-relaxed">
                       {selectedCluster.description[lang]}
                     </p>
@@ -1680,7 +1827,7 @@ export default function App() {
                     <span className="text-[11px] text-slate-400 uppercase block font-semibold">{t[lang].defectRate}</span>
                     <div className="flex items-center space-x-2">
                       <Activity className="w-4 h-4 text-emerald-500" />
-                      <span className="text-sm font-bold text-slate-800">{selectedCluster.defectRate} {lang === "zh" ? " (同等工厂均值)" : " (Historic Average)"}</span>
+                      <span className="text-sm font-bold text-slate-800">{selectedCluster.defectRate} {T(" (同等工厂均值)", " (Historic Average)")}</span>
                     </div>
                   </div>
                 </div>
@@ -1729,7 +1876,7 @@ export default function App() {
               {/* Inputs Column */}
               <div className="lg:col-span-5 bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm space-y-6">
                 <span className="text-xs font-bold text-[#c5a059] uppercase tracking-wider block border-b pb-2">
-                  {lang === "zh" ? "1. 品控测算控制台" : "1. INSPECTION CONFIGURATIONS"}
+                  {T("1. 品控测算控制台", "1. INSPECTION CONFIGURATIONS")}
                 </span>
 
                 <div className="space-y-3">
@@ -1812,9 +1959,7 @@ export default function App() {
                 <div className="bg-slate-50 p-4 border border-slate-200 rounded-sm text-xs text-slate-500 flex items-start space-x-2">
                   <Info className="w-4 h-4 text-[#003580] shrink-0 mt-0.5" />
                   <p className="leading-relaxed">
-                    {lang === "zh" ? 
-                      "此抽样程序可自动测算单次正常抽检方案。SinoSource 独家品控经理将完全以此计划提取出厂样本，置入物理实验室抗撕裂及耐酸测试，绝无感官偏私。" : 
-                      "Statistical sample counts calculated conform strictly to standard single normal inspection regimes under ISO 2859-1. Defectives limits are binding on factories."
+                    {T("此抽样程序可自动测算单次正常抽检方案。SinoSource 独家品控经理将完全以此计划提取出厂样本，置入物理实验室抗撕裂及耐酸测试，绝无感官偏私。", "Statistical sample counts calculated conform strictly to standard single normal inspection regimes under ISO 2859-1. Defectives limits are binding on factories.")
                     }
                   </p>
                 </div>
@@ -1826,7 +1971,7 @@ export default function App() {
                   <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
                     <h3 className="text-md font-bold text-white tracking-wide uppercase flex items-center space-x-2">
                       <FileCheck2 className="w-5 h-5 text-[#c5a059]" />
-                      <span>{lang === "zh" ? "2. 国际质检抽检测算报告" : "2. ISO SAMPLING CERTIFICATE bluePRINT"}</span>
+                      <span>{T("2. 国际质检抽检测算报告", "2. ISO SAMPLING CERTIFICATE bluePRINT")}</span>
                     </h3>
                     <span className="text-[11px] font-black text-[#c5a059] uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded">
                       ISO 2859-1 Code: {aqlResults.code}
@@ -1844,27 +1989,29 @@ export default function App() {
                       <div className="absolute top-0 right-0 w-8 h-8 bg-emerald-500/10 rounded-full"></div>
                       <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1">{t[lang].aqlResultAccept}</span>
                       <span className="text-3xl font-black text-emerald-400">≤ {aqlResults.ac}</span>
-                      <span className="text-[10px] text-slate-300 block mt-1">{lang === "zh" ? "缺陷数合格上限" : "Max Defective Items"}</span>
+                      <span className="text-[10px] text-slate-300 block mt-1">{T("缺陷数合格上限", "Max Defective Items")}</span>
                     </div>
 
                     <div className="bg-white/5 p-4 rounded-sm border border-white/10 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-8 h-8 bg-red-500/10 rounded-full"></div>
                       <span className="text-[10px] text-slate-400 uppercase tracking-wider block mb-1">{t[lang].aqlResultReject}</span>
                       <span className="text-3xl font-black text-rose-400">≥ {aqlResults.re}</span>
-                      <span className="text-[10px] text-rose-300 block mt-1">{lang === "zh" ? "达到即扣件拒收" : "Mandatory Reject Limit"}</span>
+                      <span className="text-[10px] text-rose-300 block mt-1">{T("达到即扣件拒收", "Mandatory Reject Limit")}</span>
                     </div>
                   </div>
 
                   <div className="space-y-4">
                     <div className="p-4 bg-white/5 rounded-sm border border-white/10 text-xs">
                       <span className="font-bold text-[#c5a059] block uppercase mb-1">
-                        🎯 {lang === "zh" ? "出货合规判据执行声明 (AQL 2.5)" : "Inspection Compliance Executions"}
+                        🎯 {T("出货合规判据执行声明 (AQL 2.5)", "Inspection Compliance Executions")}
                       </span>
                       <p className="text-slate-300 leading-relaxed">
-                        {lang === "zh" ? 
-                          `SinoSource专职质检组在仓库随机开箱提取并严格验证 ${aqlResults.sampleSize} 件。如若有瑕疵表面划痕超过 ${aqlResults.ac} 件（即达到 ${aqlResults.re} 件或以上），该批出货立即在上海/宁波港被拦截锁仓，不予核发《出港品控合格书》，并召集厂长在48小时内下达产线返修更替方案。` : 
-                          `Our designated inspection agents will extract exactly ${aqlResults.sampleSize} units selected completely at random from individual cartons. If the verified defectives count under test is equal to or less than ${aqlResults.ac}, the shipment passes. If verified failures reach or exceed ${aqlResults.re}, the warehouse locks down dispatch and SinoSource triggers immediate manufacturer product calibration and line remediation.`
-                        }
+                        {T(
+                          `SinoSource专职质检组在仓库随机开箱提取并严格验证 ${aqlResults.sampleSize} 件。如若有瑕疵表面划痕超过 ${aqlResults.ac} 件（即达到 ${aqlResults.re} 件或以上），该批出货立即在上海/宁波港被拦截锁仓，不予核发《出港品控合格书》，并召集厂长在48小时内下达产线返修更替方案。`,
+                          `Our designated inspection agents will extract exactly ${aqlResults.sampleSize} units selected completely at random from individual cartons. If the verified defectives count under test is equal to or less than ${aqlResults.ac}, the shipment passes. If verified failures reach or exceed ${aqlResults.re}, the warehouse locks down dispatch and SinoSource triggers immediate manufacturer product calibration and line remediation.`,
+                          `Nuestros agentes de inspección extraerán exactamente ${aqlResults.sampleSize} unidades al azar. Si los defectos son ${aqlResults.ac} o menos, el despacho pasa. Si los fallos alcanzan o superan los ${aqlResults.re}, se bloquea el envío y se activa una rectificación inmediata del fabricante.`,
+                          `Наши инспекторы выберут случайным образом ровно ${aqlResults.sampleSize} шт. Если количество дефектов составит ${aqlResults.ac} или меньше, партия проходит. Если число дефектов достигнет ${aqlResults.re} или более, груз блокируется до устранения дефектов.`
+                        )}
                       </p>
                     </div>
 
@@ -1893,7 +2040,7 @@ export default function App() {
                   <span className="text-[10px] text-slate-400 uppercase tracking-widest">Sinosource International Inspections QA Block</span>
                   <button 
                     onClick={() => {
-                      alert(lang === "zh" ? "AQL 质检方案计划表已发送至商业级排单系统中。" : "Standard AQL Blueprint locked in system.");
+                      alert(T("AQL 质检方案计划表已发送至商业级排单系统中。", "Standard AQL Blueprint locked in system."));
                     }}
                     className="bg-[#c5a059] text-[#001c44] font-bold text-xs uppercase px-4 py-2 hover:bg-yellow-500 transition rounded-sm"
                   >
@@ -1923,7 +2070,7 @@ export default function App() {
               <div className="lg:col-span-5 bg-white border border-slate-200 p-6 md:p-8 rounded-sm shadow-sm space-y-6">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <span className="text-xs font-bold text-[#c5a059] uppercase tracking-wider">
-                    {lang === "zh" ? "在线填写采购规范" : "Procurement Draft Setup"}
+                    {T("在线填写采购规范", "Procurement Draft Setup")}
                   </span>
                   
                   {/* Load Template Spec Button */}
@@ -2013,9 +2160,7 @@ export default function App() {
                 </form>
 
                 <div className="p-3.5 bg-yellow-50 border-l-4 border-[#c5a059] rounded-sm text-[11px] text-slate-700 leading-normal">
-                  💡 {lang === "zh" ? 
-                    "SinoSource 绝不对外流泄任何采购规格与方案。通过此规划器，您将获得由中国供应链宏观政策库支持的高端建议。" : 
-                    "Confidentiality Guaranteed. The AI Sourcing strategy runs protected under active SSL and secure enterprise sandbox mechanisms."
+                  💡 {T("SinoSource 绝不对外流泄任何采购规格与方案。通过此规划器，您将获得由中国供应链宏观政策库支持的高端建议。", "Confidentiality Guaranteed. The AI Sourcing strategy runs protected under active SSL and secure enterprise sandbox mechanisms.")
                   }
                 </div>
               </div>
@@ -2039,9 +2184,7 @@ export default function App() {
                       <div className="h-48 flex flex-col items-center justify-center space-y-4">
                         <div className="w-8 h-8 border-4 border-[#c5a059]/30 border-t-[#c5a059] rounded-full animate-spin"></div>
                         <p className="text-xs text-slate-400 text-center animate-pulse">
-                          {lang === "zh" ? 
-                            "正在解构中国数万家在库工厂集聚区，计算物流直航路线..." : 
-                            "Analyzing cluster density, assessing regional tariffs, and scheduling export milestones..."
+                          {T("正在解构中国数万家在库工厂集聚区，计算物流直航路线...", "Analyzing cluster density, assessing regional tariffs, and scheduling export milestones...")
                           }
                         </p>
                       </div>
@@ -2053,7 +2196,7 @@ export default function App() {
                           onClick={handleLoadSampleData} 
                           className="mt-3 bg-red-800 text-white font-bold text-[10px] px-3 py-1 rounded"
                         >
-                          {lang === "zh" ? "使用本地方案备份数据" : "Use Fallback Core Proposal Data"}
+                          {T("使用本地方案备份数据", "Use Fallback Core Proposal Data")}
                         </button>
                       </div>
                     ) : aiPlanningOutput ? (
@@ -2085,12 +2228,10 @@ export default function App() {
                         </div>
                         <div className="space-y-1">
                           <p className="text-slate-200 font-bold text-sm">
-                            {lang === "zh" ? "等待提交规格指令..." : "Awaiting Procurement Directives"}
+                            {T("等待提交规格指令...", "Awaiting Procurement Directives")}
                           </p>
                           <p className="text-[11px] text-slate-400 max-w-sm">
-                            {lang === "zh" ? 
-                              "请在左侧输入需要集采的产品要求。若不确定，请点击「载入规范模版」先行预览高端排程。" : 
-                              "Fill the container metrics on the left, or immediately run a live sample test via the high-end template button."
+                            {T("请在左侧输入需要集采的产品要求。若不确定，请点击「载入规范模版」先行预览高端排程。", "Fill the container metrics on the left, or immediately run a live sample test via the high-end template button.")
                             }
                           </p>
                         </div>
@@ -2101,8 +2242,8 @@ export default function App() {
                             setTimeout(() => {
                               // Auto trigger simulation for superior visual feedback
                               setAiPlanningOutput(
-                                lang === "zh" ? 
-                                `### 📋 华源不锈钢真空保温杯采购可行性方案 (3,000个)
+                                T(
+                                  `### 📋 华源不锈钢真空保温杯采购可行性方案 (3,000个)
 
 #### 1. 甄选国内产业集群地
 *   **优先推荐区域：** 浙江永康 (保温杯之都) / 浙江慈溪
@@ -2122,9 +2263,8 @@ export default function App() {
 
 #### 4. 报关海关关税优化建议
 *   **HS海关编码匹配：** 建议申报为 3924.10 或 7323.93
-*   **税率调减策略：** 协助申办原产地证明文件 Form A，防范反倾销复合审查风险。` 
-                                :
-                                `### 📋 SinoSource Sourcing Feasibility Report: Thermal Coffee Tumbler (3,000 Units)
+*   **税率调减策略：** 协助申办原产地证明文件 Form A，防范反倾销复合审查风险。`,
+                                  `### 📋 SinoSource Sourcing Feasibility Report: Thermal Coffee Tumbler (3,000 Units)
 
 #### 1. Elite Industrial Cluster Recommendation & Analysis
 *   **Recommended Sourcing Zone:** Yongkang, Zhejiang Province (The global capital of vacuum hardware).
@@ -2144,13 +2284,56 @@ export default function App() {
 
 #### 4. Smart Customs & Tariff Classifications
 *   **HS Code Categorization:** 7323.93.00 (Standard steel kitchenware).
-*   **Mitigation Strategy:** Issue certified Certificate of Origin sheets at port warehouses to assure seamless customs clearances.`
+*   **Mitigation Strategy:** Issue certified Certificate of Origin sheets at port warehouses to assure seamless customs clearances.`,
+                                  `### 📋 Informe de Viabilidad del Suministro: Tazas Térmicas (3.000 Unidades)
+
+#### 1. Recomendación y Análisis de Clúster Industrial Elite
+*   **Zona Recomendada:** Yongkang, Provincia de Zhejiang (La capital mundial de hardware de vacío).
+*   **Densidad de la Cadena:** Alta concentración de fabricantes de acero S30408, líneas de recubrimiento en polvo y pruebas físicas de alto vacío.
+*   **Puerto de Envío:** Puerto de Ningbo (Tránsito marítimo directo al puerto de Barcelona en 28 días).
+
+#### 2. Calendario de Producción y Logística
+*   **Días 1-5:** Creación de prototipos y aprobación de grabado láser mediante CAD digital.
+*   **Días 6-22:** Fabricación en masa mediante embutición profunda y prueba de retención de vacío de 24h.
+*   **Días 23-25:** Inspección obligatoria al azar según directrices de ISO AQL 2.5.
+*   **Días 26-35:** Consolidación de carga en Ningbo, despacho de exportación y embarque marítimo.
+
+#### 3. Directivas Rigurosas de Control de Calidad SinoSource
+*   **Cumplimiento Químico:** Cumplimiento de normas alimentarias FDA en junta de silicona, auditoría de certificados CE.
+*   **Prueba de Estrés:** Resistencia mediante ensayos de caída multiángulo, monitorización de niveles de vacío.
+*   **Control Cosmético:** Uso de espectrofotómetro digital para comprobar variaciones de pintura, umbral de rayas <0,05 mm.
+
+#### 4. Clasificación Arancelaria y Aduanas Inteligentes
+*   **Clasificación HS:** 7323.93.00 (Utensilios de cocina de acero estándar).
+*   **Mitigación:** Emisión de Certificado de Origen visado en puerto para garantizar el despacho de aduanas sin aranceles extraordinarios.`,
+                                  `### 📋 Отчет о технико-экономическом аудите производства термокружек (3 000 шт.)
+
+#### 1. Рекомендация промышленного кластера
+*   **Целевая зона производства:** Юнкан, провинция Чжэцзян (мировая столица термосов из нержавеющей стали).
+*   **Ландшафт поставщиков:** Высокая концентрация заводов по прокату стали S30408 и автоматических печений вакуумирования.
+*   **Логистический порт отгрузки:** Порт Нинбо (прямой морской рейс FCL в Санкт-Петербург за 27 дней).
+
+#### 2. Ключевые этапы производственного цикла и логистики
+*   **Дни 1-5:** Прототипирование и согласование лазерной гравировки по цифровым чертежам CAD.
+*   **Дни 6-22:** Штамповка и массовое изготовление стаканов, 24-часовой вакуумный тест на линии.
+*   **Дни 23-25:** Обязательная финальная инспекция партии по международному стандарту ISO AQL 2.5.
+*   **Дни 26-35:** Консолидация на складе в Нинбо, выгрузка деклараций и фрахтование судна.
+
+#### 3. Строгий регламент качества SinoSource
+*   **Химическая безопасность:** Тестирование FDA силиконовых уплотнителей, проверка легирования стали.
+*   **Физическая стойкость:** Тест на падение под различными углами с высоты 2м, контроль теплосбережения.
+*   **Контроль царапин:** Офлайн-калибровка для матового покрытия (допустимый порог царапин менее 0.05 мм).
+
+#### 4. Оптимизация таможни и пошлин
+*   **Код ТН ВЭД:** 7323.93.00 (Посуда столовая и кухонная из нержавеющей стали).
+*   **Снижение пошлин:** Выпуск сертифицированного сертификата происхождения в портовом терминале для ускоренного прохождения таможни.`
+                                )
                               );
                             }, 300);
                           }}
                           className="bg-white hover:bg-slate-100 text-[#001c44] font-black text-xs px-4 py-2 border rounded transition-all"
                         >
-                          {lang === "zh" ? "一键仿真预览" : "Trigger Instant AI Simulator Preview"}
+                          {T("一键仿真预览", "Trigger Instant AI Simulator Preview")}
                         </button>
                       </div>
                     )}
@@ -2228,7 +2411,7 @@ export default function App() {
             {/* Simulated Logistics Pipeline Visualizer */}
             <div className="bg-[#001c44] text-white p-6 md:p-8 rounded-sm shadow-md space-y-6">
               <span className="text-xs font-bold text-[#c5a059] uppercase tracking-widest block">
-                {lang === "zh" ? "中国到全球港口多工序集托管演示" : "CROSS-BORDER CONSOLIDATION VISUALIZER"}
+                {T("中国到全球港口多工序集托管演示", "CROSS-BORDER CONSOLIDATION VISUALIZER")}
               </span>
 
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
@@ -2239,8 +2422,8 @@ export default function App() {
                     <span className="text-2xl font-black text-[#c5a059]">01</span>
                     <span className="text-[9px] bg-sky-500/20 text-sky-300 px-1.5 py-0.5 rounded tracking-wide font-black uppercase">Factory Group</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white">{lang === "zh" ? "多家上游供货商备齐" : "Vendor Production"}</h4>
-                  <p className="text-[11px] text-slate-300">{lang === "zh" ? "佛山、永康、深圳按计划同时启动制造" : "Separate manufacturing hubs finalize items."}</p>
+                  <h4 className="text-xs font-bold text-white">{T("多家上游供货商备齐", "Vendor Production")}</h4>
+                  <p className="text-[11px] text-slate-300">{T("佛山、永康、深圳按计划同时启动制造", "Separate manufacturing hubs finalize items.")}</p>
                 </div>
 
                 {/* Step 2 */}
@@ -2249,8 +2432,8 @@ export default function App() {
                     <span className="text-2xl font-black text-[#c5a059]">02</span>
                     <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded tracking-wide font-black uppercase">AQL Inspection</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white">{lang === "zh" ? "我司代表执行出厂品控" : "ISO QC Verification"}</h4>
-                  <p className="text-[11px] text-slate-300">{lang === "zh" ? "按ISO标准就地开箱，验证缺陷无毒合规" : "Physical inspections confirm zero structural default."}</p>
+                  <h4 className="text-xs font-bold text-white">{T("我司代表执行出厂品控", "ISO QC Verification")}</h4>
+                  <p className="text-[11px] text-slate-300">{T("按ISO标准就地开箱，验证缺陷无毒合规", "Physical inspections confirm zero structural default.")}</p>
                 </div>
 
                 {/* Step 3 */}
@@ -2259,8 +2442,8 @@ export default function App() {
                     <span className="text-2xl font-black text-[#c5a059]">03</span>
                     <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded tracking-wide font-black uppercase">Consolidation</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white">{lang === "zh" ? "保税区极速集拼拼箱" : "FCL Cargo Sorting"}</h4>
-                  <p className="text-[11px] text-slate-300">{lang === "zh" ? "宁波/深圳仓合箱堆装，出具集托防潮包装" : "Consolidate into single cost-effective container."}</p>
+                  <h4 className="text-xs font-bold text-white">{T("保税区极速集拼拼箱", "FCL Cargo Sorting")}</h4>
+                  <p className="text-[11px] text-slate-300">{T("宁波/深圳仓合箱堆装，出具集托防潮包装", "Consolidate into single cost-effective container.")}</p>
                 </div>
 
                 {/* Step 4 */}
@@ -2269,8 +2452,8 @@ export default function App() {
                     <span className="text-2xl font-black text-[#c5a059]">04</span>
                     <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded tracking-wide font-black uppercase">Customs Clear</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white">{lang === "zh" ? "出口快速规范申报" : "Smooth Export Declar"}</h4>
-                  <p className="text-[11px] text-slate-300">{lang === "zh" ? "提供原产地特惠证书，申报正确海关编码" : "Issue certified CO to mitigate anti-dumping rates."}</p>
+                  <h4 className="text-xs font-bold text-white">{T("出口快速规范申报", "Smooth Export Declar")}</h4>
+                  <p className="text-[11px] text-slate-300">{T("提供原产地特惠证书，申报正确海关编码", "Issue certified CO to mitigate anti-dumping rates.")}</p>
                 </div>
 
                 {/* Step 5 */}
@@ -2279,16 +2462,14 @@ export default function App() {
                     <span className="text-2xl font-black text-[#c5a059]">05</span>
                     <span className="text-[9px] bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded tracking-wide font-black uppercase">Delivery</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white">{lang === "zh" ? "远洋拼箱/海空陆派送" : "Ultimate Dispatch"}</h4>
-                  <p className="text-[11px] text-slate-300">{lang === "zh" ? "目的港直航拼箱到门，保障安全无损" : "Frictionless carriage direct to destination DDP seaport."}</p>
+                  <h4 className="text-xs font-bold text-white">{T("远洋拼箱/海空陆派送", "Ultimate Dispatch")}</h4>
+                  <p className="text-[11px] text-slate-300">{T("目的港直航拼箱到门，保障安全无损", "Frictionless carriage direct to destination DDP seaport.")}</p>
                 </div>
 
               </div>
 
               <div className="bg-white/5 p-4 rounded border-l-4 border-[#c5a059] text-xs text-slate-300">
-                ⭐ {lang === "zh" ? 
-                  "华源常年与马士基 (Maersk)、长荣 (Evergreen)、地中海航运 (MSC) 签订核心保舱运费协定，保障在海运暴涨期依然能确保您的散货柜不被丢落。" : 
-                  "Our contracted alliance block-space guarantees that our consolidations remain loaded during Peak Chinese Export periods."
+                ⭐ {T("华源常年与马士基 (Maersk)、长荣 (Evergreen)、地中海航运 (MSC) 签订核心保舱运费协定，保障在海运暴涨期依然能确保您的散货柜不被丢落。", "Our contracted alliance block-space guarantees that our consolidations remain loaded during Peak Chinese Export periods.")
                 }
               </div>
             </div>
@@ -2307,7 +2488,7 @@ export default function App() {
             </div>
             <div className="flex flex-col">
               <span className="text-md font-bold tracking-tight text-white">SINO<span className="text-[#c5a059]">SOURCE</span> GLOBAL</span>
-              <span className="text-[9px] text-slate-400 uppercase tracking-widest -mt-0.5">{lang === "zh" ? "对标外贸顶尖品控与物流设计" : "Enterprise Procurement Solutions"}</span>
+              <span className="text-[9px] text-slate-400 uppercase tracking-widest -mt-0.5">{T("对标外贸顶尖品控与物流设计", "Enterprise Procurement Solutions")}</span>
             </div>
           </div>
 
@@ -2360,7 +2541,7 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-sm md:text-base font-black tracking-wider uppercase text-white flex items-center gap-2">
-                    {lang === "zh" ? "华源专商中控数字孪生终端" : "Sinosource Admin Digital Twin Terminal"}
+                    {T("华源专商中控数字孪生终端", "Sinosource Admin Digital Twin Terminal")}
                     <span className="text-[10px] bg-[#c5a059]/10 text-[#c5a059] border border-[#c5a059]/30 px-1.5 py-0.5 rounded font-mono font-medium tracking-normal normal-case">v4.2 PRO</span>
                   </h3>
                   <p className="text-[10px] text-slate-400 font-mono">
@@ -2375,12 +2556,12 @@ export default function App() {
                   {inquiryPasscode.trim().toUpperCase() === "LBX" ? (
                     <>
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                      <span className="text-emerald-400 uppercase font-black tracking-wider">{lang === "zh" ? "系统解密解封" : "RECORDS DECRYPTED"}</span>
+                      <span className="text-emerald-400 uppercase font-black tracking-wider">{T("系统解密解封", "RECORDS DECRYPTED")}</span>
                     </>
                   ) : (
                     <>
                       <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
-                      <span className="text-rose-400 uppercase font-black tracking-wider">{lang === "zh" ? "高度隔离锁闭中" : "CRYPT-LOCKED"}</span>
+                      <span className="text-rose-400 uppercase font-black tracking-wider">{T("高度隔离锁闭中", "CRYPT-LOCKED")}</span>
                     </>
                   )}
                 </div>
@@ -2394,7 +2575,7 @@ export default function App() {
                   className="p-1 px-2.5 bg-white/5 hover:bg-red-600/35 border border-white/10 hover:border-red-500/50 rounded-sm text-slate-300 hover:text-white transition flex items-center space-x-1 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
-                  <span className="text-[11px] font-bold uppercase tracking-wider">{lang === "zh" ? "关闭" : "Close"}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider">{T("关闭", "Close")}</span>
                 </button>
               </div>
             </div>
@@ -2419,25 +2600,23 @@ export default function App() {
                       🔒 CLIENT RECORDS CONFIDENTIALITY GATE
                     </h4>
                     <p className="text-xs text-slate-350 leading-relaxed font-medium">
-                      {lang === "zh" ? 
-                        "为遵守相关海关及国际贸易保密条款，填表者的多维开模公差、特质AQL指标与联系地址已就地全数哈希隔离。系统外部绝不保留任何明文记录。" : 
-                        "To ensure full compliance with international commercial trade privacy agreements, all submitter specs and communication numbers are strictly encrypted."
+                      {T("为遵守相关海关及国际贸易保密条款，填表者的多维开模公差、特质AQL指标与联系地址已就地全数哈希隔离。系统外部绝不保留任何明文记录。", "To ensure full compliance with international commercial trade privacy agreements, all submitter specs and communication numbers are strictly encrypted.")
                       }
                     </p>
                     <p className="text-[11px] text-slate-400 font-mono leading-relaxed bg-black/30 p-2.5 rounded border border-white/5">
-                      {lang === "zh" ? "【安全声明】输入专属安全密钥解锁以接管最高级物理指派与机密文件物理销毁等顶级统管权力。" : "【SECURITY】Please type the correct key to unlock data nodes and authorize state assignment / document destruction."}
+                      {T("【安全声明】输入专属安全密钥解锁以接管最高级物理指派与机密文件物理销毁等顶级统管权力。", "【SECURITY】Please type the correct key to unlock data nodes and authorize state assignment / document destruction.")}
                     </p>
                   </div>
 
                   {/* Security Passcode Field - Obsfucating characters securely */}
                   <div className="w-full space-y-3">
                     <label className="text-[10px] font-bold text-[#c5a059] uppercase tracking-widest block font-mono">
-                      {lang === "zh" ? "高级物料控制官安全密钥验证：" : "Administrative Encryption Key Authentication:"}
+                      {T("高级物料控制官安全密钥验证：", "Administrative Encryption Key Authentication:")}
                     </label>
                     <input 
                       type="password" 
                       maxLength={12} 
-                      placeholder={lang === "zh" ? "请输入安全秘钥" : "Enter secure key..."}
+                      placeholder={T("请输入安全秘钥", "Enter secure key...")}
                       value={inquiryPasscode || ""}
                       onChange={(e) => setInquiryPasscode(e.target.value)}
                       className="w-full bg-slate-950 border border-white/15 hover:border-[#c5a059] text-white rounded-sm py-3 px-4 text-center text-lg tracking-widest outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all font-mono font-black"
@@ -2459,11 +2638,11 @@ export default function App() {
                     <div>
                       <span className="text-[10px] text-emerald-400 uppercase font-black tracking-widest block font-mono">AUTHORIZED LIVE SESSION</span>
                       <h4 className="text-sm font-bold text-emerald-200 mt-0.5 flex items-center gap-2">
-                        <span>🔓 {lang === "zh" ? "尊贵的高级物料管理官员已接入中控系统" : "Principal Procurement Officer Session Enabled"}</span>
+                        <span>🔓 {T("尊贵的高级物料管理官员已接入中控系统", "Principal Procurement Officer Session Enabled")}</span>
                         <span className="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-medium">Session IP Verified</span>
                       </h4>
                       <p className="text-xs text-slate-300 mt-1">
-                        {lang === "zh" ? "您已成功授信，拥有最高等级采购配方检索、指派跟进调整和档案物理销毁最高权力。" : "Complete clearance active. Filter specs, update dispatch milestones, or completely destruct record nodes."}
+                        {T("您已成功授信，拥有最高等级采购配方检索、指派跟进调整和档案物理销毁最高权力。", "Complete clearance active. Filter specs, update dispatch milestones, or completely destruct record nodes.")}
                       </p>
                     </div>
 
@@ -2471,28 +2650,28 @@ export default function App() {
                       onClick={() => setInquiryPasscode("")}
                       className="bg-red-500/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 font-bold px-3 py-1.5 rounded text-xs transition uppercase tracking-wider font-mono shrink-0 cursor-pointer"
                     >
-                      {lang === "zh" ? "安全锁闭退出" : "Lock Session"}
+                      {T("安全锁闭退出", "Lock Session")}
                     </button>
                   </div>
 
                   {/* Operational Dashboard Metrics Grid */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
                     <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
-                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "存证线索总数" : "Total Inquiries"}</span>
-                      <span className="text-2xl font-black text-[#c5a059]">{inquiries.length} {lang === "zh" ? "宗" : "Inquiries"}</span>
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{T("存证线索总数", "Total Inquiries")}</span>
+                      <span className="text-2xl font-black text-[#c5a059]">{inquiries.length} {T("宗", "Inquiries")}</span>
                     </div>
                     <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
-                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "排档质检专家" : "Active Roster"}</span>
-                      <span className="text-2xl font-black text-emerald-400">18 {lang === "zh" ? "组" : "Nodes"}</span>
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{T("排档质检专家", "Active Roster")}</span>
+                      <span className="text-2xl font-black text-emerald-400">18 {T("组", "Nodes")}</span>
                     </div>
                     <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm">
-                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{lang === "zh" ? "海关税率减免" : "Customs Reduction"}</span>
+                      <span className="text-[10px] text-slate-400 block uppercase font-mono font-bold tracking-wider">{T("海关税率减免", "Customs Reduction")}</span>
                       <span className="text-2xl font-black text-white">99.2%</span>
                     </div>
                     <div className="bg-[#001c44] border border-white/10 p-3 rounded-sm font-mono">
-                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{lang === "zh" ? "物理销毁权限" : "Destruction Status"}</span>
+                      <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{T("物理销毁权限", "Destruction Status")}</span>
                       <span className="text-[11px] bg-red-600/15 border border-red-500/30 text-red-400 px-2 py-1 rounded font-bold uppercase tracking-wider block text-center mt-1">
-                        {lang === "zh" ? "强力授权激活" : "DESTRUCT ENABLED"}
+                        {T("强力授权激活", "DESTRUCT ENABLED")}
                       </span>
                     </div>
                   </div>
@@ -2505,7 +2684,7 @@ export default function App() {
                       </span>
                       <input 
                         type="text" 
-                        placeholder={lang === "zh" ? "通过公司名称、联络信息、目标大类、特定 AQL 等关键词模糊检索..." : "Query name, phone, trade term, specs..."}
+                        placeholder={T("通过公司名称、联络信息、目标大类、特定 AQL 等关键词模糊检索...", "Query name, phone, trade term, specs...")}
                         value={adminSearch}
                         onChange={(e) => setAdminSearch(e.target.value)}
                         className="w-full bg-[#001533] border border-white/10 rounded-sm py-2 px-3 pl-10 text-xs text-white focus:outline-none focus:border-[#c5a059] transition-all font-sans"
@@ -2524,14 +2703,15 @@ export default function App() {
                       <button
                         onClick={fetchInquiries}
                         className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs transition flex items-center space-x-1 font-semibold uppercase tracking-wider cursor-pointer"
-                        title={lang === "zh" ? "同步云端最新记录" : "Sync Server data"}
+                        title={T("同步云端最新记录", "Sync Server data")}
                       >
                         <RefreshCw className="w-3.5 h-3.5 text-[#c5a059]" />
-                        <span className="hidden sm:inline font-mono">{lang === "zh" ? "重新拉取" : "Sync Records"}</span>
+                        <span className="hidden sm:inline font-mono">{T("重新拉取", "Sync Records")}</span>
                       </button>
                       
                       <div className="text-xs text-slate-400 font-mono">
-                        {lang === "zh" ? `已筛选显示: ${inquiries.filter(inq => {
+                        {T("已筛选显示: ", "Filtered: ", "Filtrado: ", "Отфильтровано: ")}
+                        {inquiries.filter(inq => {
                           const query = adminSearch.toLowerCase().trim();
                           if (!query) return true;
                           return (
@@ -2543,19 +2723,8 @@ export default function App() {
                             (inq.id || "").toLowerCase().includes(query) ||
                             (inq.status || "").toLowerCase().includes(query)
                           );
-                        }).length} 宗` : `Filtered: ${inquiries.filter(inq => {
-                          const query = adminSearch.toLowerCase().trim();
-                          if (!query) return true;
-                          return (
-                            (inq.clientName || "").toLowerCase().includes(query) ||
-                            (inq.contact || "").toLowerCase().includes(query) ||
-                            (inq.email || "").toLowerCase().includes(query) ||
-                            (inq.productName || "").toLowerCase().includes(query) ||
-                            (inq.specifications || "").toLowerCase().includes(query) ||
-                            (inq.id || "").toLowerCase().includes(query) ||
-                            (inq.status || "").toLowerCase().includes(query)
-                          );
-                        }).length} cases`}
+                        }).length}
+                        {T(" 宗", " cases", " casos", " дел")}
                       </div>
                     </div>
                   </div>
@@ -2577,8 +2746,8 @@ export default function App() {
                     }).length === 0 ? (
                       <div className="text-center py-24 text-slate-400 text-xs bg-[#001c44] border border-white/5 rounded-sm">
                         <AlertTriangle className="w-8 h-8 text-[#c5a059] mx-auto mb-3 opacity-60" />
-                        <p className="font-bold text-slate-300">{lang === "zh" ? "没有匹配任何条件的采购线索" : "No matching inquiries found."}</p>
-                        <p className="text-[11px] mt-1 text-slate-500">{lang === "zh" ? "尝试更改检索词或登记新的物料档案" : "Adjust your query criteria or submit a new inquiry form."}</p>
+                        <p className="font-bold text-slate-300">{T("没有匹配任何条件的采购线索", "No matching inquiries found.")}</p>
+                        <p className="text-[11px] mt-1 text-slate-500">{T("尝试更改检索词或登记新的物料档案", "Adjust your query criteria or submit a new inquiry form.")}</p>
                       </div>
                     ) : (
                       inquiries.filter(inq => {
@@ -2603,7 +2772,7 @@ export default function App() {
                             <div>
                               <div className="flex items-center space-x-2">
                                 <span className="text-[10px] font-mono font-bold text-[#c5a059] bg-[#c5a059]/10 px-2 py-0.5 border border-[#c5a059]/20 rounded-sm">{inq.id}</span>
-                                <span className="text-slate-400 text-[10px] font-mono">{new Date(inq.createdAt).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")}</span>
+                                <span className="text-slate-400 text-[10px] font-mono">{new Date(inq.createdAt).toLocaleString(T("zh-CN", "en-US"))}</span>
                               </div>
                               <h5 className="text-sm font-extrabold text-white mt-1.5 flex items-center space-x-2">
                                 <Users className="w-4 h-4 text-[#c5a059]" />
@@ -2617,7 +2786,7 @@ export default function App() {
                             {/* Status and Action Panel */}
                             <div className="space-y-2 shrink-0">
                               <div className="flex items-center justify-end space-x-1 text-[11px]">
-                                <span className="text-slate-400 font-medium">{lang === "zh" ? "当前作业进程：" : "Dispatch status:"}</span>
+                                <span className="text-slate-400 font-medium">{T("当前作业进程：", "Dispatch status:")}</span>
                                 <span className="text-[#c5a059] font-black">{inq.status || "Reviewing"}</span>
                               </div>
 
@@ -2629,14 +2798,14 @@ export default function App() {
                                     onChange={(e) => updateInquiryStatus(inq.id, e.target.value)}
                                     className="bg-slate-950 border border-[#c5a059]/40 text-[#c5a059] text-[11px] px-2.5 py-1.5 pr-8 rounded-sm font-bold focus:outline-none focus:border-[#c5a059] transition cursor-pointer appearance-none"
                                   >
-                                    <option value="Reviewing (资深总监评估中)">{lang === "zh" ? "🔄 资深总监评估中" : "🔄 Reviewing"}</option>
-                                    <option value="Auditing (供应商资质审查中)">{lang === "zh" ? "🔎 供应商资质审查中" : "🔎 Supplier Auditing"}</option>
-                                    <option value="Prototyping (首样模具打样中)">{lang === "zh" ? "📐 首样模具打样中" : "📐 Prototyping"}</option>
-                                    <option value="Production (大货柔性排产中)">{lang === "zh" ? "🏭 大货柔性排产中" : "🏭 Mass Production"}</option>
-                                    <option value="QC Quality (AQLII 现场出厂抽检中)">{lang === "zh" ? "🔬 AQLII 现场出厂抽检中" : "🔬 AQL II QC Inspection"}</option>
-                                    <option value="Logistics (集港理货与多模海运中)">{lang === "zh" ? "🚢 集港理货与多模海运中" : "🚢 Logistics Tracking"}</option>
-                                    <option value="Customs (出口退税与国合报关中)">{lang === "zh" ? "📦 出口退税与国合报关中" : "📦 Customs Clearance"}</option>
-                                    <option value="Completed (保密合同顺利履约结案)">{lang === "zh" ? "✅ 保密合同顺利履约结案" : "✅ Order Completed"}</option>
+                                    <option value="Reviewing (资深总监评估中)">{T("🔄 资深总监评估中", "🔄 Reviewing")}</option>
+                                    <option value="Auditing (供应商资质审查中)">{T("🔎 供应商资质审查中", "🔎 Supplier Auditing")}</option>
+                                    <option value="Prototyping (首样模具打样中)">{T("📐 首样模具打样中", "📐 Prototyping")}</option>
+                                    <option value="Production (大货柔性排产中)">{T("🏭 大货柔性排产中", "🏭 Mass Production")}</option>
+                                    <option value="QC Quality (AQLII 现场出厂抽检中)">{T("🔬 AQLII 现场出厂抽检中", "🔬 AQL II QC Inspection")}</option>
+                                    <option value="Logistics (集港理货与多模海运中)">{T("🚢 集港理货与多模海运中", "🚢 Logistics Tracking")}</option>
+                                    <option value="Customs (出口退税与国合报关中)">{T("📦 出口退税与国合报关中", "📦 Customs Clearance")}</option>
+                                    <option value="Completed (保密合同顺利履约结案)">{T("✅ 保密合同顺利履约结案", "✅ Order Completed")}</option>
                                   </select>
                                   <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-[#c5a059]">
                                     ▼
@@ -2646,15 +2815,15 @@ export default function App() {
                                 {/* Destruction Command Button */}
                                 <button 
                                   onClick={() => {
-                                    if (confirm(lang === "zh" ? "⚠️ 是否确认物理销毁该档案？\n\n此项操作属于最高行政指令且无法撤销！该记录将彻底从云端系统及本地存储器中抹除！" : "🚨 DANGER: Are you sure you want to permanently delete this record? This cannot be undone!")) {
+                                    if (confirm(T("⚠️ 是否确认物理销毁该档案？\n\n此项操作属于最高行政指令且无法撤销！该记录将彻底从云端系统及本地存储器中抹除！", "🚨 DANGER: Are you sure you want to permanently delete this record? This cannot be undone!"))) {
                                       deleteInquiry(inq.id);
                                     }
                                   }}
                                   className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-sm text-[11px] font-bold transition flex items-center space-x-1 cursor-pointer hover:shadow-lg border border-red-500/50"
-                                  title={lang === "zh" ? "一键彻底物理清算" : "Permanent physical destruction"}
+                                  title={T("一键彻底物理清算", "Permanent physical destruction")}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
-                                  <span>{lang === "zh" ? "物理销毁" : "Destruct"}</span>
+                                  <span>{T("物理销毁", "Destruct")}</span>
                                 </button>
                               </div>
                             </div>
@@ -2663,17 +2832,17 @@ export default function App() {
                           {/* Detail Specifications Specifications Row */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                             <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
-                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{lang === "zh" ? "采购产品大类" : "Target Product Description"}</span>
+                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{T("采购产品大类", "Target Product Description")}</span>
                               <span className="font-bold text-white block">{inq.productName}</span>
                             </div>
                             
                             <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
-                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{lang === "zh" ? "意向合作采购量" : "Target Sourcing Volume"}</span>
-                              <span className="font-bold text-white block">{inq.quantity || (lang === "zh" ? "无限/持续采购" : "Ongoing Sourcing")}</span>
+                              <span className="text-[10px] text-slate-400 uppercase font-mono block tracking-wider">{T("意向合作采购量", "Target Sourcing Volume")}</span>
+                              <span className="font-bold text-white block">{inq.quantity || (T("无限/持续采购", "Ongoing Sourcing"))}</span>
                             </div>
 
                             <div className="bg-slate-950/40 p-3 rounded border border-white/5 space-y-1">
-                              <span className="text-[10px] text-emerald-450 uppercase font-mono block tracking-wider font-extrabold">{lang === "zh" ? "特派沟通地址 (已安全解密)" : "Decrypted WhatsApp/Tel"}</span>
+                              <span className="text-[10px] text-emerald-450 uppercase font-mono block tracking-wider font-extrabold">{T("特派沟通地址 (已安全解密)", "Decrypted WhatsApp/Tel")}</span>
                               <span className="font-bold text-emerald-400 select-all block bg-emerald-500/10 px-2 py-0.5 rounded-sm line-clamp-1 border border-emerald-500/15">
                                 {inq.contact}
                               </span>
@@ -2681,7 +2850,7 @@ export default function App() {
                           </div>
 
                           <div className="bg-[#001533] p-3 rounded border border-white/5 text-xs text-slate-200">
-                            <strong className="text-[#c5a059] block mb-1 font-mono tracking-wider">{lang === "zh" ? "材质工艺要求、AQL参数与特殊申报配方：" : "Detailed Specifications & AQL Quality Directives:"}</strong>
+                            <strong className="text-[#c5a059] block mb-1 font-mono tracking-wider">{T("材质工艺要求、AQL参数与特殊申报配方：", "Detailed Specifications & AQL Quality Directives:")}</strong>
                             <p className="whitespace-pre-wrap leading-relaxed font-sans">{inq.specifications}</p>
                           </div>
 
@@ -2713,6 +2882,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+
 
     </div>
   );

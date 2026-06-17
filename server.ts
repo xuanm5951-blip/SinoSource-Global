@@ -219,6 +219,16 @@ Destination: ${destination}`,
   }
 });
 
+// Redirect or serve the separate administration dashboard
+app.get("/admin", (req, res) => {
+  if (process.env.NODE_ENV !== "production") {
+    res.redirect("/admin.html");
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    res.sendFile(path.join(distPath, "admin.html"));
+  }
+});
+
 // Configure Vite middleware in development or static asset serving in production
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
