@@ -2595,7 +2595,7 @@ export default function App() {
               <div className="flex items-center space-x-3">
                 {/* Status indicator */}
                 <div className="hidden sm:flex items-center space-x-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-sm text-[10px] font-mono">
-                  {true ? (
+                  {inquiryPasscode.trim().toUpperCase() === "LBX" ? (
                     <>
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                       <span className="text-emerald-400 uppercase font-black tracking-wider">{T("系统解密解封", "RECORDS DECRYPTED")}</span>
@@ -2624,7 +2624,7 @@ export default function App() {
 
             {/* Modal Body Container */}
             <div className="flex-1 overflow-y-auto min-h-0 bg-[#001533] p-6 flex flex-col justify-center items-center">
-              {false ? (
+              {inquiryPasscode.trim().toUpperCase() !== "LBX" ? (
                 
                 // SECURE AUTHORIZATION GATEWAY SCREEN
                 <div className="w-full max-w-md bg-[#001c44] border border-white/10 p-8 rounded-sm text-center space-y-6 shadow-xl relative overflow-hidden">

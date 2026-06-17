@@ -47,11 +47,11 @@ const translations = {
     title: "SinoSource 跨境采购商表单与线索管理系统",
     subtitle: "全球供应链服务・实时开模质检排产监控中心",
     loginTitle: "管理员二次保密审计验证",
-    loginSub: "出于跨境贸易合规与多维海关准入保密准则，访问及审阅表单线索需验证LBX机密秘钥",
+    loginSub: "出于跨境贸易合规与多维海关准入保密准则，访问及审阅表单线索需验证管理员机密标识密钥",
     passcodeLabel: "系统访问凭证 (Authorization Passcode)",
-    passcodePlaceholder: "请输入保密口令 (默认：LBX)",
+    passcodePlaceholder: "请输入保密口令",
     loginBtn: "安全验证并进行数据解密",
-    wrongPasscode: "安全口令校验失败，请核对您的指派编号或联系保密团队。提示：默认口令为 LBX",
+    wrongPasscode: "安全口令校验失败，请核对您的管理员授权编号或联系内审团队。",
     totalLeads: "系统在档线索",
     pendingStatus: "总监首期评估",
     activeStatus: "排期打样/签约中",
@@ -108,11 +108,11 @@ const translations = {
     title: "SinoSource Lead & Form Management Dashboard",
     subtitle: "Global Supply Chain Services · Sourcing Leads & AQL Inspection Hub",
     loginTitle: "Administrative Security Verification",
-    loginSub: "To comply with international customs and confidential trade acts, enter your executive LBX credentials.",
+    loginSub: "To comply with international customs and confidential trade acts, enter your executive security credentials.",
     passcodeLabel: "System Access Credentials (Authorization Code)",
-    passcodePlaceholder: "Enter security key (Default: LBX)",
+    passcodePlaceholder: "Enter security key",
     loginBtn: "Authenticate & Decrypt Dossiers",
-    wrongPasscode: "Invalid authorization credentials. Hint: Default security key is 'LBX'.",
+    wrongPasscode: "Invalid authorization credentials. Please verify your assignment details or contact support.",
     totalLeads: "Total Sourcing Leads",
     pendingStatus: "Director Evaluation",
     activeStatus: "Molding/Sampling",
@@ -169,11 +169,11 @@ const translations = {
     title: "Sistema de Gestión de Clientes y Formularios de SinoSource",
     subtitle: "Servicio de Cadena de Suministro Global · Centro de Inspección de Calidad y Producción en Tiempo Real",
     loginTitle: "Verificación de Seguridad Administrativa",
-    loginSub: "Para cumplir con las leyes de aduanas internacionales y los acuerdos comerciales confidenciales, ingrese sus credenciales ejecutivas LBX",
+    loginSub: "Para cumplir con las leyes de aduanas internacionales y los acuerdos comerciales confidenciales, ingrese sus credenciales de seguridad",
     passcodeLabel: "Credenciales de Acceso al Sistema (Código de Autorización)",
-    passcodePlaceholder: "Ingrese la clave de seguridad (Predeterminada: LBX)",
+    passcodePlaceholder: "Ingrese la clave de seguridad",
     loginBtn: "Autenticar y Descifrar Dossiers",
-    wrongPasscode: "Clave de seguridad inválida. Pista: La clave predeterminada es 'LBX'.",
+    wrongPasscode: "Clave de seguridad inválida. Por favor, verifique sus credenciales con el equipo de soporte.",
     totalLeads: "Total de Clientes Potenciales",
     pendingStatus: "Evaluación del Director",
     activeStatus: "Moldeo/Muestreo",
@@ -230,11 +230,11 @@ const translations = {
     title: "Система Управления Клиентами и Лидами SinoSource Global",
     subtitle: "Глобальные услуги цепочки поставок · Подача заявок и контроль качества AQL",
     loginTitle: "Административная Верификация Безопасности",
-    loginSub: "Для соблюдения международных таможенных правил и законов о конфиденциальной торговле, укажите ваши исполнительные учетные данные LBX.",
+    loginSub: "Для соблюдения международных таможенных правил и законов о конфиденциальной торговле, укажите ваши исполнительные защитные учетные данные.",
     passcodeLabel: "Учетные данные Системы Доступа (Код Авторизации)",
-    passcodePlaceholder: "Введите защитный ключ (По умолчанию: LBX)",
+    passcodePlaceholder: "Введите защитный ключ",
     loginBtn: "Авторизоваться и Расшифровать Досье",
-    wrongPasscode: "Неверные защитные учетные данные. Подсказка: По умолчанию защитный ключ — 'LBX'.",
+    wrongPasscode: "Неверные защитные учетные данные. Пожалуйста, обратитесь к руководству или администратору безопасности.",
     totalLeads: "Всего заявок в системе",
     pendingStatus: "Оценка Директором",
     activeStatus: "Моделирование/Выборка",
@@ -349,7 +349,9 @@ export default function AdminApp() {
   });
 
   const [passcode, setPasscode] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(() => {
+    return localStorage.getItem("sinosourse_admin_authorized") === "true";
+  });
   const [authError, setAuthError] = useState("");
 
   const [inquiries, setInquiries] = useState<CustomerInquiry[]>([]);
@@ -1266,7 +1268,7 @@ export default function AdminApp() {
       <footer className="bg-slate-950 border-t border-slate-800 py-6 text-center text-slate-500 mt-12 shrink-0">
         <p className="text-[10px] uppercase font-mono tracking-widest text-[#c5a059]">SinoSource Automated Logistics Group</p>
         <p className="text-[10px] text-slate-600 font-mono mt-1">
-          Confidential System Internal Module. Secure Key Auth Token LBX. Unauthorized leakage of trade logs strictly penalized under international law.
+          Confidential System Internal Module. Secure Key Auth Token Verified. Unauthorized leakage of trade logs strictly penalized under international law.
         </p>
       </footer>
 
