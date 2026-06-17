@@ -29,7 +29,12 @@ function getGeminiClient() {
   return aiClient;
 }
 
-// In-memory array for customer inquiries. This ensures proper cloud runtime storage and retrieval for the current session.
+import fs from "fs";
+
+// Path to persist customer inquiries on disk
+const INQUIRIES_FILE = path.join(process.cwd(), "inquiries.json");
+
+// In-memory representation synced with disk
 interface CustomerInquiry {
   id: string;
   clientName: string;
@@ -43,20 +48,60 @@ interface CustomerInquiry {
   createdAt: string;
 }
 
-const inquiries: CustomerInquiry[] = [
-  {
-    id: "INQ-20260601-904",
-    clientName: "SINO TRADING GROUP LLC",
-    contact: "+1 (415) 555-0199 (WhatsApp Available)",
-    email: "import@sinotrading.com",
-    productName: "Double-Wall S30408 Stainless Steel Tumbler (500ml)",
-    quantity: "5,000 Pcs",
-    specifications: "Matte coating, customizable embossed logo, leakproof food-grade silicone seals.",
-    incoterms: "DDP Port of Los Angeles",
-    status: "Reviewing (资深总监评估中)",
-    createdAt: "2026-06-01T08:12:45Z"
+let inquiries: CustomerInquiry[] = [];
+
+// Load existing inquiries or seed initial ones
+try {
+  if (fs.existsSync(INQUIRIES_FILE)) {
+    const fileContent = fs.readFileSync(INQUIRIES_FILE, "utf-8");
+    inquiries = JSON.parse(fileContent);
+    console.log(`[SinoSource Database] Successfully loaded ${inquiries.length} persistent inquiries.`);
+  } else {
+    // Seed with high-quality default inquiry
+    inquiries = [
+      {
+        id: "INQ-20260601-904",
+        clientName: "SINO TRADING GROUP LLC",
+        contact: "+1 (415) 555-0199 (WhatsApp Available)",
+        email: "import@sinotrading.com",
+        productName: "Double-Wall S30408 Stainless Steel Tumbler (500ml)",
+        quantity: "5,000 Pcs",
+        specifications: "Matte coating, customizable embossed logo, leakproof food-grade silicone seals.",
+        incoterms: "DDP Port of Los Angeles",
+        status: "Reviewing (资深总监评估中)",
+        createdAt: "2026-06-01T08:12:45Z"
+      }
+    ];
+    fs.writeFileSync(INQUIRIES_FILE, JSON.stringify(inquiries, null, 2), "utf-8");
+    console.log("[SinoSource Database] Created new inquiries database file with seed data.");
   }
-];
+} catch (error) {
+  console.error("[SinoSource Database] Failed to initialize file storage:", error);
+  // Fail-safe in-memory array setup
+  inquiries = [
+    {
+      id: "INQ-20260601-904",
+      clientName: "SINO TRADING GROUP LLC",
+      contact: "+1 (415) 555-0199 (WhatsApp Available)",
+      email: "import@sinotrading.com",
+      productName: "Double-Wall S30408 Stainless Steel Tumbler (500ml)",
+      quantity: "5,000 Pcs",
+      specifications: "Matte coating, customizable embossed logo, leakproof food-grade silicone seals.",
+      incoterms: "DDP Port of Los Angeles",
+      status: "Reviewing (资深总监评估中)",
+      createdAt: "2026-06-01T08:12:45Z"
+    }
+  ];
+}
+
+// Utility helper to persist in-memory dataset to disk
+const syncInquiriesToDisk = () => {
+  try {
+    fs.writeFileSync(INQUIRIES_FILE, JSON.stringify(inquiries, null, 2), "utf-8");
+  } catch (error) {
+    console.error("[SinoSource Database] Write transaction failed:", error);
+  }
+};
 
 app.get("/api/inquiries", (req, res) => {
   res.json(inquiries);
@@ -83,6 +128,7 @@ app.post("/api/inquiries", (req, res) => {
   };
 
   inquiries.unshift(newInquiry);
+  syncInquiriesToDisk();
   res.status(201).json(newInquiry);
 });
 
@@ -95,6 +141,7 @@ app.put("/api/inquiries/:id", (req, res) => {
     return res.status(404).json({ error: "Inquiry not found" });
   }
   inquiries[index].status = status;
+  syncInquiriesToDisk();
   res.json(inquiries[index]);
 });
 
@@ -106,6 +153,7 @@ app.delete("/api/inquiries/:id", (req, res) => {
     return res.status(404).json({ error: "Inquiry not found" });
   }
   inquiries.splice(index, 1);
+  syncInquiriesToDisk();
   res.json({ success: true, message: "Inquiry destroyed" });
 });
 

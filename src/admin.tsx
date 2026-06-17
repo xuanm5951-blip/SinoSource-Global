@@ -70,8 +70,11 @@ const translations = {
     exportJson: "结构化备份 (JSON)",
     addMockBtn: "一键录入高规格模拟采购需求",
     idCol: "线索技术编号",
-    clientCol: "采购主体与联络人",
+    clientCol: "采购主体",
+    emailCol: "电子邮箱",
+    contactCol: "联系电话",
     productCol: "寻源品类 / 计划体量",
+    specsCol: "多维技术参数规格 / 备注",
     incotermCol: "期望国际贸易条款",
     statusCol: "调拨流转状态",
     dateCol: "录入时间",
@@ -128,8 +131,11 @@ const translations = {
     exportJson: "Backup JSON Database",
     addMockBtn: "Inject Simulated High-Spec Lead",
     idCol: "Lead Tech ID",
-    clientCol: "Inquirer Corporate / Rep",
+    clientCol: "Inquirer Name",
+    emailCol: "Email Address",
+    contactCol: "Phone Number",
     productCol: "Product Target & Volume",
+    specsCol: "Tech Specs / Remarks",
     incotermCol: "Requested Incoterms",
     statusCol: "Pipeline Status",
     dateCol: "Entry Timestamp",
@@ -187,7 +193,10 @@ const translations = {
     addMockBtn: "Inyectar Cliente Simulado de Altas Prestaciones",
     idCol: "ID Técnico",
     clientCol: "Cliente Corporativo",
+    emailCol: "Correo Electrónico",
+    contactCol: "Teléfono",
     productCol: "Objetivo de Producto y Volumen",
+    specsCol: "Especificaciones / Notas",
     incotermCol: "Incoterms Solicitados",
     statusCol: "Estado del Pipeline",
     dateCol: "Marca de Tiempo",
@@ -244,8 +253,11 @@ const translations = {
     exportJson: "Резервная Копия Базы Данных (JSON)",
     addMockBtn: "Внедрить Лид с Реальными Спецификациями",
     idCol: "Технический ID Лида",
-    clientCol: "Заявитель и Контакты",
+    clientCol: "Заявитель",
+    emailCol: "Электронная Почта",
+    contactCol: "Телефон",
     productCol: "Целевой Товар и Объем",
+    specsCol: "Спецификации / Примечания",
     incotermCol: "Инкотермс Лида",
     statusCol: "Статус в Цепочке",
     dateCol: "Временная Отметка",
@@ -356,6 +368,16 @@ export default function AdminApp() {
   const [selectedInquiry, setSelectedInquiry] = useState<CustomerInquiry | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [editingStatus, setEditingStatus] = useState("");
+
+  // Copy-to-clipboard feedback mechanism
+  const [copiedKeys, setCopiedKeys] = useState<{ [key: string]: boolean }>({});
+  const handleCopyText = (text: string, uniqueKey: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKeys(prev => ({ ...prev, [uniqueKey]: true }));
+    setTimeout(() => {
+      setCopiedKeys(prev => ({ ...prev, [uniqueKey]: false }));
+    }, 1500);
+  };
 
   // Double Click deletion confirmation helper
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -1001,7 +1023,10 @@ export default function AdminApp() {
                   <tr className="bg-slate-950 text-slate-400 border-b border-slate-800 text-[10px] font-black uppercase tracking-wider">
                     <th className="py-3.5 px-4">{t.idCol}</th>
                     <th className="py-3.5 px-4">{t.clientCol}</th>
+                    <th className="py-3.5 px-4">{t.emailCol}</th>
+                    <th className="py-3.5 px-4">{t.contactCol}</th>
                     <th className="py-3.5 px-4">{t.productCol}</th>
+                    <th className="py-3.5 px-4">{t.specsCol}</th>
                     <th className="py-3.5 px-4">{t.incotermCol}</th>
                     <th className="py-3.5 px-4">{t.statusCol}</th>
                     <th className="py-3.5 px-4">{t.dateCol}</th>
@@ -1030,12 +1055,47 @@ export default function AdminApp() {
                         </td>
 
                         {/* Client details */}
-                        <td className="py-4 px-4">
-                          <div className="font-bold text-slate-200 group-hover:text-white transition max-w-xs truncate" title={inq.clientName}>
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="font-bold text-slate-200 group-hover:text-white transition max-w-[180px] truncate" title={inq.clientName}>
                             {inq.clientName}
                           </div>
-                          <div className="text-[10px] text-slate-500 font-mono mt-0.5 truncate max-w-xs">
-                            {inq.email}
+                        </td>
+
+                        {/* Email Column */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-1.5">
+                            <span 
+                              className="font-mono text-slate-350 text-[11px] select-all bg-slate-950 px-2 py-1 rounded border border-slate-900 leading-none truncate max-w-[190px] cursor-pointer hover:border-slate-800" 
+                              title={T("点击全选 / Click to select", "点击全选")}
+                            >
+                              {inq.email}
+                            </span>
+                            <button
+                              onClick={() => handleCopyText(inq.email, `${inq.id}-email`)}
+                              className="text-[10px] text-amber-500 hover:text-amber-400 bg-slate-950 border border-slate-850 px-1.5 py-0.5 rounded-sm cursor-pointer transition select-none hover:bg-slate-900 hover:border-amber-900/20 active:scale-95"
+                              title={T("复制电子邮箱", "Copy Email")}
+                            >
+                              {copiedKeys[`${inq.id}-email`] ? "✔ Done" : T("复制", "Copy")}
+                            </button>
+                          </div>
+                        </td>
+
+                        {/* Contact details */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-1.5">
+                            <span 
+                              className="font-mono text-slate-350 text-[11px] select-all bg-slate-950 px-2 py-1 rounded border border-slate-900 leading-none truncate max-w-[160px] cursor-pointer hover:border-slate-800"
+                              title={T("点击全选 / Click to select", "点击全选")}
+                            >
+                              {inq.contact}
+                            </span>
+                            <button
+                              onClick={() => handleCopyText(inq.contact, `${inq.id}-contact`)}
+                              className="text-[10px] text-amber-500 hover:text-amber-400 bg-slate-950 border border-slate-850 px-1.5 py-0.5 rounded-sm cursor-pointer transition select-none hover:bg-slate-900 hover:border-amber-900/20 active:scale-95"
+                              title={T("复制联络电话", "Copy Phone")}
+                            >
+                              {copiedKeys[`${inq.id}-contact`] ? "✔ Done" : T("复制", "Copy")}
+                            </button>
                           </div>
                         </td>
 
@@ -1046,6 +1106,13 @@ export default function AdminApp() {
                           </div>
                           <div className="text-[10px] text-[#c5a059] font-mono font-black mt-0.5">
                             {T("计划数: ", "Qty: ", "Cant: ", "Кол-во: ")}{inq.quantity}
+                          </div>
+                        </td>
+
+                        {/* Specifications/Remarks */}
+                        <td className="py-4 px-4 max-w-xs">
+                          <div className="text-slate-400 truncate font-sans leading-relaxed text-[11px]" title={inq.specifications}>
+                            {inq.specifications || "-"}
                           </div>
                         </td>
 

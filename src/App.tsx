@@ -493,6 +493,43 @@ function calculateAQL(batch: number, level: string) {
 export default function App() {
     const [lang, setLang] = useState<Language>("en"); // Defaulting to English interface upon visit
 
+  // Dynamically update page document title, description, and HTML lang property for robust SEO
+  useEffect(() => {
+    // 1. Set document language code
+    document.documentElement.lang = lang;
+
+    // 2. Localized Title and Description mapping
+    let metaTitle = "SinoSource Global | Premier China Sourcing Agent, Factory Audits & Quality Control Inspection";
+    let metaDesc = "SinoSource Global is your premier tier-1 Chinese sourcing agent, offering factory safety audits, direct factory-direct price mitigation, international AQL 2.5 random quality inspections, and full-stack cross-border logistics consolidation.";
+
+    if (lang === "zh") {
+      metaTitle = "华源环球采购 | 跨境采购代理、工厂穿透审计与 AQL 2.5 质量检测标准 - SinoSource Global";
+      metaDesc = "华源环球采购是专业的中国源头工厂采购代办商，提供制造商物理隔离审计、降低出厂虚高报价、国际AQL抽检以及多式联运环球清关拼箱。";
+    } else if (lang === "es") {
+      metaTitle = "SinoSource Global | Agente de Compras en China, Auditorías de Fábrica y Control de Calidad Estándar AQL";
+      metaDesc = "Navegamos la complejidad de la manufactura china in situ. SinoSource Global proporciona auditorías de riesgo técnico, control de calidad garantizado AQL 2.5 y reducción de aranceles.";
+    } else if (lang === "ru") {
+      metaTitle = "SinoSource Global | Поиск поставщиков в Китае, независимый аудит фабрик и контроль качества AQL";
+      metaDesc = "Прямые контракты с производителями Китая без наценок посредников. SinoSource Global обеспечивает надежные инженерные проверки фабрик, контроль качества по AQL 2.5 и мультимодальную доставку.";
+    }
+
+    // Update document title
+    document.title = metaTitle;
+
+    // Update dynamic description meta tag if available
+    const descMeta = document.querySelector('meta[name="description"]');
+    if (descMeta) {
+      descMeta.setAttribute("content", metaDesc);
+    }
+    
+    // Update Open Graph dynamic signals
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", metaTitle);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", metaDesc);
+  }, [lang]);
+
   const T = (zh: React.ReactNode, en: React.ReactNode, es?: React.ReactNode, ru?: React.ReactNode): React.ReactNode => {
     if (lang === "zh") return zh;
     if (lang === "es") return es || en;
@@ -1624,7 +1661,7 @@ export default function App() {
                     {T("华源环球采购商务联络中心", "SinoSource Corporate Liaison Center")}
                   </h3>
                 </div>
-                <div className="text-sm md:text-base font-bold text-slate-700 max-w-md leading-relaxed">
+                <div className="text-xs text-slate-500 max-w-sm">
                   {T("欢迎全球采购伙伴直接连通。资深品控总监将在48小时内就材料采购可行性给予首期物理核实意见。", "Connect directly with our primary regional desks. Our senior quality managers will follow up on potential manufacturing lines.")}
                 </div>
               </div>
