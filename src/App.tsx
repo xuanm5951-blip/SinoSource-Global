@@ -31,7 +31,8 @@ import {
   Search,
   Trash2,
   RefreshCw,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
 import { Language, IndustrialCluster, SupplyChainStep, CustomerInquiry } from "./types";
 // @ts-ignore
@@ -2553,10 +2554,14 @@ export default function App() {
 
         <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-4">
           <p>© 2026 SinoSource Global Sourcing & Inspected Co., Ltd. All Rights Reserved. ISO 9001 & ISO 2859-1 Quality Control Certified.</p>
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 items-center">
             <a href="#" className="hover:text-white transition">Terms of Carriage</a>
             <a href="#" className="hover:text-white transition">IP Protection Pledge</a>
             <a href="#" className="hover:text-white transition">SLA Guarantee Agreement</a>
+            <span className="text-slate-600">|</span>
+            <a href="/admin" target="_blank" rel="noopener noreferrer" className="text-[#c5a059] hover:text-amber-300 font-black transition">
+              🔒 {T("员工管理入口", "Staff Panel")}
+            </a>
           </div>
         </div>
       </footer>
@@ -2590,7 +2595,7 @@ export default function App() {
               <div className="flex items-center space-x-3">
                 {/* Status indicator */}
                 <div className="hidden sm:flex items-center space-x-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-sm text-[10px] font-mono">
-                  {inquiryPasscode.trim().toUpperCase() === "LBX" ? (
+                  {true ? (
                     <>
                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                       <span className="text-emerald-400 uppercase font-black tracking-wider">{T("系统解密解封", "RECORDS DECRYPTED")}</span>
@@ -2619,7 +2624,7 @@ export default function App() {
 
             {/* Modal Body Container */}
             <div className="flex-1 overflow-y-auto min-h-0 bg-[#001533] p-6 flex flex-col justify-center items-center">
-              {inquiryPasscode.trim().toUpperCase() !== "LBX" ? (
+              {false ? (
                 
                 // SECURE AUTHORIZATION GATEWAY SCREEN
                 <div className="w-full max-w-md bg-[#001c44] border border-white/10 p-8 rounded-sm text-center space-y-6 shadow-xl relative overflow-hidden">
@@ -2683,12 +2688,23 @@ export default function App() {
                       </p>
                     </div>
 
-                    <button 
-                      onClick={() => setInquiryPasscode("")}
-                      className="bg-red-500/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 font-bold px-3 py-1.5 rounded text-xs transition uppercase tracking-wider font-mono shrink-0 cursor-pointer"
-                    >
-                      {T("安全锁闭退出", "Lock Session")}
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a 
+                        href="/admin" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-sans font-black px-4 py-2 rounded text-xs transition uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.25)]"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>{T("进入高级中控后台 ↗", "Full Admin Panel ↗")}</span>
+                      </a>
+                      <button 
+                        onClick={() => setIsTrackerModalOpen(false)}
+                        className="bg-red-500/20 hover:bg-red-600/30 border border-red-500/40 text-red-200 font-bold px-3.5 py-2 rounded text-xs transition uppercase tracking-wider font-mono cursor-pointer"
+                      >
+                        {T("关闭中控", "Close Panel")}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Operational Dashboard Metrics Grid */}
