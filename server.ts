@@ -1,7 +1,14 @@
+import dotenv from "dotenv";
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import { Resend } from "resend";
+
+// Load environment variables for local development. Vercel/AI Studio inject
+// these at runtime, so the files are optional there.
+dotenv.config();
+dotenv.config({ path: ".env.local" });
 
 const app = express();
 const PORT = 3000;
@@ -30,6 +37,109 @@ function getGeminiClient() {
 }
 
 import fs from "fs";
+
+// Resend is initialized lazily so the server still boots when the API key is
+// missing (for example during local UI-only development).
+let resendClient: Resend | null = null;
+function getResendClient(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("WARNING: RESEND_API_KEY is not defined. Email notifications are disabled.");
+    return null;
+  }
+  if (!resendClient) {
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
+
+function escapeHtml(value: string | undefined | null): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function buildInquiryEmailHtml(inquiry: CustomerInquiry): string {
+  const rows: Array<[string, string]> = [
+    ["Inquiry ID", inquiry.id],
+    ["Company / Representative", inquiry.clientName],
+    ["Contact Number", inquiry.contact],
+    ["Email", inquiry.email],
+    ["Product / Material Category", inquiry.productName],
+    ["Quantity", inquiry.quantity],
+    ["Incoterms", inquiry.incoterms],
+    ["Specifications / AQL Notes", inquiry.specifications],
+  ];
+
+  const rowsHtml = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:10px 14px;border:1px solid #1e293b;color:#94a3b8;font-family:monospace;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;">${escapeHtml(label)}</td>
+          <td style="padding:10px 14px;border:1px solid #1e293b;color:#f8fafc;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(value)}</td>
+        </tr>`
+    )
+    .join("");
+
+  return `
+    <div style="background:#020617;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
+      <div style="max-width:680px;margin:0 auto;background:#0f172a;border:1px solid #1e293b;border-radius:8px;overflow:hidden;">
+        <div style="background:#020617;padding:24px 28px;border-bottom:1px solid #1e293b;">
+          <div style="font-size:11px;letter-spacing:0.2em;color:#c5a059;text-transform:uppercase;font-weight:700;">SinoSource Global</div>
+          <div style="font-size:22px;color:#ffffff;font-weight:800;margin-top:6px;">New Sourcing Inquiry Received</div>
+        </div>
+        <div style="padding:28px;">
+          <table role="presentation" style="width:100%;border-collapse:collapse;">
+            ${rowsHtml}
+          </table>
+        </div>
+        <div style="background:#020617;padding:18px 28px;border-top:1px solid #1e293b;color:#64748b;font-size:12px;">
+          Auto-generated from the SinoSource Global sourcing desk.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+interface EmailSendResult {
+  sent: boolean;
+  id?: string;
+  error?: string;
+}
+
+async function sendInquiryEmail(inquiry: CustomerInquiry): Promise<EmailSendResult> {
+  const client = getResendClient();
+  if (!client) {
+    return { sent: false, error: "RESEND_API_KEY is not configured" };
+  }
+
+  const to = process.env.INQUIRY_NOTIFY_EMAIL || "xuanm5951@gmail.com";
+  const from =
+    process.env.RESEND_FROM_EMAIL || "SinoSource Global <onboarding@resend.dev>";
+
+  try {
+    const { data, error } = await client.emails.send({
+      from,
+      to: [to],
+      subject: `New Sourcing Inquiry: ${inquiry.productName} (${inquiry.id})`,
+      html: buildInquiryEmailHtml(inquiry),
+    });
+
+    if (error) {
+      console.error("[Resend] Email send returned an error:", error);
+      return { sent: false, error: error.message || String(error) };
+    }
+
+    console.log(`[Resend] Inquiry email sent to ${to} (${data?.id})`);
+    return { sent: true, id: data?.id };
+  } catch (error: any) {
+    console.error("[Resend] Failed to send inquiry email:", error);
+    return { sent: false, error: error?.message || String(error) };
+  }
+}
 
 // Path to persist customer inquiries on disk
 const INQUIRIES_FILE = path.join(process.cwd(), "inquiries.json");
@@ -107,7 +217,7 @@ app.get("/api/inquiries", (req, res) => {
   res.json(inquiries);
 });
 
-app.post("/api/inquiries", (req, res) => {
+app.post("/api/inquiries", async (req, res) => {
   const { clientName, contact, email, productName, quantity, specifications, incoterms } = req.body;
 
   if (!clientName || !contact || !email || !productName) {
@@ -129,7 +239,11 @@ app.post("/api/inquiries", (req, res) => {
 
   inquiries.unshift(newInquiry);
   syncInquiriesToDisk();
-  res.status(201).json(newInquiry);
+
+  // Email delivery is best-effort: the inquiry is already persisted, so a
+  // provider outage must never make the form look like it failed.
+  const emailNotification = await sendInquiryEmail(newInquiry);
+  res.status(201).json({ ...newInquiry, emailNotification });
 });
 
 // Update inquiry status
